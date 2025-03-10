@@ -1,0 +1,78 @@
+/* Global Styles */
+body {
+    background-color: #f8f9fa;
+  }
+  
+  /* Card Styling */
+  .p-card {
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Input Fields */
+  .p-inputtext {
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    padding: 0.75rem;
+    transition: border-color 0.3s ease;
+  }
+  
+  .p-inputtext:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  }
+  
+  /* Labels */
+  label {
+    font-weight: 500;
+    color: #495057;
+  }
+  
+  /* Error Messages */
+  .p-error {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+  }
+  
+  /* Buttons */
+  .p-button {
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+  }
+  
+  .p-button-primary {
+    background-color: #3498db;
+    border: none;
+  }
+  
+  .p-button-primary:hover {
+    background-color: #2980b9;
+  }
+  
+  .p-button-secondary {
+    background-color: #6c757d;
+    border: none;
+  }
+  
+  .p-button-secondary:hover {
+    background-color: #5a6268;
+  }
+  /* Add this to your component's CSS file or global styles */
+:host ::ng-deep .p-password {
+    width: 100%;
+  }
+  
+  :host ::ng-deep .p-password input {
+    width: 100%;
+  }
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .col-12 {
+      width: 100%;
+    }
+  }

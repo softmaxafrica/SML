@@ -1,0 +1,774 @@
+
+<div class="card">
+
+  
+  <div class="flex justify-content-end gap-4 mb-3">
+    <p-button label="{{'new_request' | translate}}" icon="pi pi-plus" [rounded]="true" severity="help" (click)="showDialog()"/>
+    <p-button label="{{'manage_columns'| translate}}" [rounded]="true" icon="pi pi-cog" (click)="columnDialogVisible = true" styleClass="m-0" severity="info" />
+    <p-button label="{{'export_to_excel'| translate}}" [rounded]="true" icon="pi pi-download" badgeSeverity="warn" styleClass="m-0" />
+  </div>
+  <p-table *ngIf="filteredJobs?.length"
+           [value]="filteredJobs"
+           dataKey="jobRequestID"
+           [tableStyle]="{ 'min-width': '60rem', 'overflow': 'hidden' }"
+           [paginator]="true"
+           [rows]="5"
+           [rowsPerPageOptions]="[5, 10, 20]"
+           class="custom-table">
+
+
+    <ng-template pTemplate="caption">
+      <div class="flex justify-content-end gap-4  ">
+        <input pInputText type="text" [(ngModel)]="searchTerm"
+               (input)="onSearch()" placeholder="Search" icon="pi pi-cog"
+               styleClass="m-0" />
+      </div>
+    </ng-template>
+
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th *ngFor="let col of targetColumns" pSortableColumn="{{ col.field }}">
+          {{ col.header }}
+          <p-sortIcon field="{{ col.field }}"></p-sortIcon>
+        </th>
+        <th style="width: 4rem">Action</th>
+      </tr>
+    </ng-template>
+
+    <!-- Table Body dynamically generated -->
+    <ng-template pTemplate="body" let-request>
+      <tr>
+        <td *ngFor="let col of targetColumns">
+          <ng-container *ngIf="col.field === 'status'; else showValue">
+            <p-tag [value]="getNestedValue(request, col.field)"
+                   [severity]="functions.getSeverity(getNestedValue(request, col.field))"></p-tag>
+          </ng-container>
+
+          <!-- Otherwise, display the nested field value -->
+          <ng-template #showValue>
+            {{ getNestedValue(request, col.field) }}
+          </ng-template>
+        </td>
+        <td>
+        <p-button type="button" severity="help"  outlined="true" icon="pi pi-search"
+                    (click)="editRequest(request)" />
+        </td>
+      </tr>
+    </ng-template>
+
+
+    <!-- Empty message -->
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td [attr.colspan]="targetColumns.length" class="text-center">
+          No job requests found.
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- Caption with Expand/Collapse All buttons -->
+<!-- Column Management Dialog -->
+<p-dialog [(visible)]="columnDialogVisible" [header]="'Manage Columns'" [modal]="true" [responsive]="true" [style]="globalColumnControlService.getColumnDialogConfig()">
+  <p-fieldset legend="Columns" [toggleable]="true">
+    <p-pickList [source]="sourceColumns" [target]="targetColumns" sourceHeader="Available Columns" targetHeader="Selected Columns"
+                filterBy="field"
+                sourceFilterPlaceholder="Search by name"
+                targetFilterPlaceholder="Search by name"
+                [dragdrop]="true" [responsive]="true" breakpoint="1400px">
+      <ng-template let-column pTemplate="item">
+        <div class="flex flex-wrap p-2 align-items-center gap-3">
+          <span class="font-bold">{{ column.header }}</span>
+        </div>
+      </ng-template>
+    </p-pickList>
+  </p-fieldset>
+  <p-footer>
+    <p-button label="Close" icon="pi pi-times" (click)="columnDialogVisible = false"></p-button>
+  </p-footer>
+</p-dialog>
+
+
+<!-- NEW TRANSPORT REQUEST -->
+
+
+<p-dialog [(visible)]="displayDialog"
+          (onHide)="hideDialog()"
+          [maximizable]="true"
+          header="Create New Request"
+          [responsive]="true"
+          [style]="{ width: '70vw', height: '100vh' }"
+           [modal]="true">
+  <!-- Dialog Header -->
+  <ng-template pTemplate="header">
+    <div class="flex align-items-center">
+      <span class="text-xl font-bold">Create New Request</span>
+      
+    </div>
+  </ng-template>
+
+  <!-- Dialog Content -->
+  <div class="p-fluid">
+    <!-- Use PrimeFlex's grid classes -->
+    <div class="grid">
+      <!-- Left Column: Job Request Form -->
+      <div class="col-12 md:col-6">
+        <p-card header="{{ 'job_request_form' | translate }}">
+          <div class="p-fluid">
+            <!-- Request Type -->
+            <div class="field mb-0">
+              <label for="requestType">{{ 'Type of Request' | translate }}</label>
+            </div>
+            <div class="field mb-3">
+
+              <p-select id="requestType"
+                        [options]="requestType"
+                        optionLabel="label"
+                        optionValue="value"
+                        [(ngModel)]="newJobRequest.requestType"
+                        placeholder="{{ 'Type of Request' | translate }}"
+                        class="w-full"></p-select>
+            </div>
+
+            <!-- Truck Type -->
+            <div class="field mb-0">
+              <label for="truckType">{{ 'Truck Type Select' | translate }}</label>
+            </div>
+            <div class="field mb-3">
+              <p-select id="truckType"
+                        [options]="truckTypes"
+                        optionLabel="typeName"
+                        optionValue="truckTypeID"
+                        [(ngModel)]="selectedTruckTypeID"
+                        (ngModelChange)="onTruckTypeChange()"
+                        placeholder="{{ 'Truck Type Select' | translate }}"
+                        class="w-full">
+                <ng-template let-truck pTemplate="item">
+                  <div title="{{ truck.description }}">{{ truck.typeName }}</div>
+                </ng-template>
+              </p-select>
+              <small class="text-secondary">{{ selectedTruckDescription }}</small>
+            </div>
+
+            <!-- Customer -->
+            <div class="field mb-0">
+              <label for="customer">{{ 'Requesting Customer' | translate }}</label>
+            </div>
+            <div class="field mb-3">
+              <p-select id="customer"
+                        [options]="customersList"
+                        optionLabel="fullName"
+                        optionValue="customerID"
+                        [(ngModel)]="newJobRequest.customerID"
+                        placeholder="{{ 'Requesting Customer' | translate }}"
+                        class="w-full"></p-select>
+            </div>
+          </div>
+        </p-card>
+      </div>
+
+      <!-- Right Column: Truck Details -->
+      <div class="col-12 md:col-6">
+        <p-card header="{{ 'truck_details' | translate }}">
+          <div class="p-fluid">
+            <!-- Cargo Description -->
+            <div class="field mb-0">
+              <label for="cargoDescription">{{ 'cargo_description' | translate }} <i class="pi pi-box"></i> </label>
+            </div>
+            <div class="field mb-3">
+              <span class="p-input-icon-left w-full">
+
+                <input pInputText
+                       id="cargoDescription"
+                       type="text"
+                       [(ngModel)]="newJobRequest.cargoDescription"
+                       placeholder="{{ 'cargo_description' | translate }}"
+                       class="w-full" />
+              </span>
+            </div>
+
+            <!-- Container Number -->
+            <div class="field mb-0">
+              <label for="containerNumber">{{ 'reference_number' | translate }} <i class="pi pi-hashtag"></i></label>
+            </div>
+            <div class="field mb-3">
+              <span class="p-input-icon-left w-full">
+
+                <input pInputText
+                       id="containerNumber"
+                       type="text"
+                       [(ngModel)]="newJobRequest.containerNumber"
+                       placeholder="{{ 'reference_number' | translate }}"
+                       class="w-full" />
+              </span>
+            </div>
+
+            <!-- Pickup Location -->
+            <div class="field mb-0">
+              <label for="pickupLocation">{{ 'pickup_location' | translate }}  <i class="pi pi-map-marker"></i></label>
+            </div>
+            <div class="field mb-3">
+              <span class="p-input-icon-left w-full">
+
+                <input pInputText
+                       id="pickupLocation"
+                       type="text"
+                       [(ngModel)]="newJobRequest.pickupLocation"
+                       placeholder="{{ 'pickup_location' | translate }}"
+                       class="w-full" />
+              </span>
+            </div>
+
+            <!-- Delivery Location -->
+            <div class="field mb-0">
+              <label for="deliveryLocation">{{ 'delivery_location' | translate }}  <i class="pi pi-map-marker"></i></label>
+            </div>
+            <div class="field mb-3">
+              <span class="p-input-icon-left w-full">
+                <input pInputText
+                       id="deliveryLocation"
+                       type="text"
+                       [(ngModel)]="newJobRequest.deliveryLocation"
+                       placeholder="{{ 'delivery_location' | translate }}"
+                       class="w-full" />
+              </span>
+            </div>
+          </div>
+        </p-card>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer with Save and Cancel Buttons -->
+  <ng-template pTemplate="footer">
+    <div class="flex justify-content-end gap-2">
+      <p-button label="{{ 'save_request' | translate }}"
+                icon="pi pi-save"
+                class="p-button-primary"
+                (click)="saveJob(newJobRequest)"></p-button>
+      <p-button label="{{ 'cancel' | translate }}"
+                icon="pi pi-times"
+                class="p-button-secondary"
+                (click)="hideDialog()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+
+
+
+<!-- DELETE REQUEST  -->
+<p-dialog [(visible)]="deleteDialogVisible"
+          [header]="'delete_confirmation' | translate"
+          [modal]="true"
+          [closable]="false"
+          [responsive]="true"
+          [style]="{ width: '30vw' }"
+          class="warning-dialog">
+
+  <div class="p-text-center">
+    <i class="pi pi-exclamation-triangle p-text-warning" style="font-size: 3rem;"></i>
+    <p class="mt-3">
+      {{ 'delete_job_request_warning' | translate }}
+    </p>
+  </div>
+
+  <div class="d-flex justify-content-center mt-4">
+    <p-button label="{{ 'yes' | translate }}"
+              icon="pi pi-check"
+              class="p-button-danger mr-2"
+              (onClick)="confirmDelete()">
+    </p-button>
+    <p-button label="{{ 'no' | translate }}"
+              icon="pi pi-times"
+              class="p-button-secondary"
+              (onClick)="deleteDialogVisible = false">
+    </p-button>
+  </div>
+</p-dialog>
+
+<!-- REQUEST DETAILS DIALOG -->
+<p-dialog [(visible)]="requestDetailsVisible" [header]="'request_details' | translate"
+           [responsive]="true"
+ [style]="{ width: '70vw' }"
+          [modal]="true" [responsive]="true"  (onHide)="resetForm()" [closable]="true" class="invoice-dialog"
+           [maximizable]="true">
+
+  <!-- Header Section -->
+  <div class="header-section">
+    <h2>{{'request_id#'|translate}} {{ activeRequest.jobRequestID }}</h2>
+    <p><b>{{'invoice_number'| translate}}:</b> {{ activeRequest.invoiceNumber }}</p>
+    <p>
+      <b>{{'status'| translate}}:</b>
+      <p-tag [value]="activeRequest.status || ''"
+             [severity]="functions.getSeverity(activeRequest.status || '')"
+             class="ml-3"></p-tag>
+
+    </p>
+  </div>
+
+  <!-- Tab View -->
+  <p-tabView>
+    <!-- Job Request Details Tab -->
+    <p-tabPanel [header]="'job_request_details' | translate" *ngIf="activeRequest">
+      <div class="flex align-items-center justify-content-center">
+        <div class="p-fluid w-full lg:w-14">
+          <div class="grid">
+            <!-- Request Details Card -->
+            <div class="col-12 md:col-6">
+              <p-card header="{{ 'request_details' | translate }}">
+                <div class="p-fluid">
+                  <div class="grid">
+                    <div class="col-12 md:col-12">
+
+                      <div class="field">
+                        <label class="font-medium">{{ 'type_of_request' | translate }}</label>
+                        <span>{{ activeRequest.requestType || 'N/A' }}</span>
+                      </div>
+                      <div class="field">
+                        <label class="font-medium">{{ 'truck_type' | translate }}</label>
+                        <span>{{ activeRequest.truckType || 'N/A' }}</span>
+                      </div>
+                      <div class="field">
+                        <label class="font-medium">{{ 'requesting_customer' | translate }}</label>
+                        <span>{{ getCustomerName(activeRequest.customerID) || 'N/A' }}</span>
+                      </div>
+                      <div class="field">
+                        <label class="font-medium">{{ 'pickup_location' | translate }}</label>
+                        <span>{{ activeRequest.pickupLocation || 'N/A' }}</span>
+                      </div>
+                      <div class="field">
+                        <label class="font-medium">{{ 'delivery_location' | translate }}</label>
+                        <span>{{ activeRequest.deliveryLocation || 'N/A' }}</span>
+                      </div>
+                      <div class="field">
+                        <label class="font-medium">{{ 'cargo_description' | translate }}</label>
+                        <span>{{ activeRequest.cargoDescription || 'N/A' }}</span>
+                      </div>
+                      <div class="field" *ngIf="activeRequest.containerNumber">
+                        <label class="font-medium">{{ 'reference_number' | translate }}</label>
+                        <span>{{ activeRequest.containerNumber || 'N/A' }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </p-card>
+            </div>
+
+            <!-- Resource Assignment Card -->
+            <div class="col-12 md:col-6" *ngIf="showTruckContent || showDriverContent">
+              <p-card header="{{ 'resource_assignment' | translate }}">
+                <div class="p-fluid">
+                  <div class="grid">
+                    <div class="col-12 md:col-12">
+
+                      <!-- Truck Selection -->
+                      <div class="field" *ngIf="showTruckContent">
+                        <label class="font-medium">{{ 'truck' | translate }}</label>
+                        <ng-container *ngIf="!activeRequest.truckID; else truckAssigned">
+                          <p-select [options]="avilableTruckLists"
+                                    optionValue="truckID"
+                                    [(ngModel)]="activeRequest.truckID"
+                                    placeholder="{{ 'select_truck' | translate }}"
+                                    styleClass="dropdown-width">
+                            <ng-template let-truck pTemplate="selectedItem">
+                              {{ truck.truckNumber }} - {{ truck.model }}
+                            </ng-template>
+                            <ng-template let-truck pTemplate="item">
+                              {{ truck.truckNumber }} - {{ truck.model }}
+                            </ng-template>
+                          </p-select>
+                        </ng-container>
+                        <ng-template #truckAssigned>
+                          <span>{{ 'assigned_truck' | translate }}: {{ activeRequest.truckID }}</span>
+                        </ng-template>
+                      </div>
+
+                      <!-- Driver Selection -->
+                      <div class="field" *ngIf="showDriverContent">
+                        <label class="font-medium">{{ 'driver' | translate }}</label>
+                        <ng-container *ngIf="!activeRequest.driverID; else driverAssigned">
+                          <p-select [options]="avilableDriverLists"
+                                    optionLabel="fullName"
+                                    optionValue="driverID"
+                                    [(ngModel)]="activeRequest.driverID"
+                                    (ngModelChange)="onInputChange()"
+                                    placeholder="{{ 'select_driver' | translate }}"
+                                    styleClass="dropdown-width">
+                          </p-select>
+                        </ng-container>
+                        <ng-template #driverAssigned>
+                          <span>{{ 'assigned_driver' | translate }}: {{ activeRequest.driverID }}</span>
+                        </ng-template>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              </p-card>
+            </div>
+
+            <!-- Price Details Card -->
+            <div class="col-12 md:col-6">
+              <p-card header="{{ 'price_details' | translate }}">
+                <div class="p-fluid">
+                  <div class="grid">
+                    <div class="col-12 md:col-12">
+                      <div class="field" *ngIf="!showPriceContent">
+                        <label class="font-medium">{{ 'customer_price' | translate }}</label>
+                        <span>{{ PriceDetails?.customerPrice || 'N/A' }}</span>
+                      </div>
+                      <div class="field" *ngIf="!showPriceContent">
+                        <label class="font-medium">{{ 'company_price' | translate }}</label>
+                        <span>{{ PriceDetails?.companyPrice || 'N/A' }}</span>
+                      </div>
+                      <div class="field" *ngIf="!showPriceContent">
+                        <label class="font-medium">{{ 'final_accepted_price' | translate }}</label>
+                        <span>{{ PriceDetails?.agreedPrice || 'N/A' }}</span>
+                      </div>
+                      <div class="field" *ngIf="showPriceContent">
+                        <label class="font-medium">{{ 'your_price' | translate }}</label>
+                        <input pInputText (ngModelChange)="onInputChange()" type="number" min="1000" [(ngModel)]="activeRequest.requestedPrice" />
+                      </div>
+                      <div class="field" *ngIf="showPriceContent">
+                        <label class="font-medium">{{ 'customer_price' | translate }}</label>
+                        <input pInputText (ngModelChange)="onInputChange()" type="number" [(ngModel)]="activeRequest.customerPrice" />
+                      </div>
+                      <div class="field" *ngIf="showPriceContent">
+                        <label class="font-medium">{{ 'company_advance' | translate }}</label>
+                        <input pInputText (ngModelChange)="onInputChange()" type="number" [(ngModel)]="activeRequest.companyAdvanceAmountRequred" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </p-card>
+            </div>
+
+
+          </div>
+        </div>
+      </div>
+      <p-divider></p-divider>
+      <div class="action-buttons">
+        <p-button label="{{ 'apply' | translate }}"
+                  icon="pi pi-save"
+                  [disabled]="!isFormChanged"
+                  class="p-button-primary mr-2"
+                  (onClick)="updateRequest()">
+        </p-button>
+
+        <p-button label="{{ 'close' | translate }}" icon="pi pi-times" (onClick)="resetForm()"  (onHide)="resetForm()" class="p-button-secondary"></p-button>
+      </div>
+    </p-tabPanel>
+
+    <p-tabPanel [header]="'contract_details' | translate" *ngIf="contractDetails">
+      <p-card>
+        <!-- Contract Agreement Section -->
+        <p-card header="{{ 'contract_agreement' | translate }}">
+          <div class="p-fluid contract-document" id="contractDocument">
+            <!-- Logo and Title -->
+            <div class="header-section">
+              <img src="assets/images/icons/more-info.png"
+                   width="50px"
+                   style="margin-right: .5rem;"
+                   />
+
+              <img src="assets/images/icons/add.png" />
+              <h1 class="company-name">Softmax Logistics</h1>
+              <p class="company-tagline">Delivering Excellence Worldwide</p>
+            </div>
+
+            <!-- Contract Title -->
+            <!--<h2 class="text-center font-bold">{{ 'contract_title' | translate }}</h2>
+            <p class="text-center contract-subtitle"><strong>{{ 'contract_subtitle' | translate }}</strong></p>-->
+
+            <!-- Introduction -->
+            <div class="introduction">
+              <p>
+                This Contract (Agreement) is entered into as of <strong>{{ contractDetails.contractDate || 'N/A' }}</strong>, by and between <strong>{{ activeRequest.companyID || 'N/A' }}</strong> ("Company") and <strong>{{ activeRequest.customerID || 'N/A' }}</strong> ("Customer"). This Agreement outlines the terms and conditions under which the Company will provide logistics services to the Customer.
+              </p>
+            </div>
+
+            <!-- Parties Involved -->
+            <h3>{{ 'contract_parties' | translate }}</h3>
+            <div class="party-section">
+              <p>
+                <strong>Company:</strong> {{ activeRequest.companyID || 'N/A' }}, located at {{    'N/A' }}.
+              </p>
+              <p>
+                <strong>Customer:</strong> {{ activeRequest.customerID || 'N/A' }}, located at {{    'N/A' }}.
+              </p>
+            </div>
+
+            <!-- Contract Details -->
+            <h3>{{ 'contract_details' | translate }}</h3>
+            <div class="contract-details">
+              <p>
+                This Agreement is effective as of <strong>{{ contractDetails.contractDate || 'N/A' }}</strong> and will remain in force until <strong>{{ contractDetails.expirationDate || 'N/A' }}</strong>, unless terminated earlier in accordance with the terms herein. The Contract ID for reference is <strong>{{ contractDetails.contractID || 'N/A' }}</strong>.
+              </p>
+            </div>
+
+            <!-- Scope of Work -->
+            <h3>{{ 'scope_of_work' | translate }}</h3>
+            <div class="scope-of-work">
+              <p>
+                The Company agrees to provide logistics services for the transportation of goods from <strong>{{ contractDetails.jobRequest?.pickupLocation || 'N/A' }}</strong> to <strong>{{ contractDetails.jobRequest?.deliveryLocation || 'N/A' }}</strong>. The services include but are not limited to pickup, transportation, and delivery of the specified goods.
+              </p>
+            </div>
+
+            <!-- Terms & Conditions -->
+            <h3>{{ 'contract_terms' | translate }}</h3>
+            <div class="contract-terms">
+              <p>
+                The following terms and conditions govern the provision of services under this Agreement:
+              </p>
+              <ol>
+                <li>
+                  <strong>Payment Terms:</strong> The Customer agrees to pay the total amount of <strong>${{ PriceDetails?.agreedPrice || 'N/A' }}</strong> for the services rendered. Payment is due within <strong>{{ contractDetails.paymentDue || 'N/A' }}</strong> from the date of invoice.
+                </li>
+                <li>
+                  <strong>Late Fees:</strong> A late fee of <strong>{{ contractDetails.lateFee || 'N/A' }}</strong> will be applied to any payments not received by the due date.
+                </li>
+                <li>
+                  <strong>Confidentiality:</strong> Both parties agree to maintain the confidentiality of all information exchanged during the term of this Agreement.
+                </li>
+                <li>
+                  <strong>Termination:</strong> Either party may terminate this Agreement with <strong>30 days' written notice</strong>. In the event of termination, the Customer will be responsible for payment of all services rendered up to the termination date.
+                </li>
+                <li>
+                  <strong>Dispute Resolution:</strong> Any disputes arising under this Agreement shall be resolved through arbitration in accordance with the laws of <strong>{{ contractDetails.termsAndConditions || 'N/A' }}</strong>.
+                </li>
+              </ol>
+            </div>
+
+            <!-- Price Details -->
+            <h3>{{ 'price_details' | translate }}</h3>
+            <div class="price-details">
+              <p>
+                The total cost for the services provided under this Agreement is <strong>${{ PriceDetails?.agreedPrice || 'N/A' }}</strong>. This amount includes all applicable taxes and fees. The Customer agrees to pay this amount in full as per the payment terms outlined above.
+              </p>
+            </div>
+
+            <!-- Payment Terms -->
+            <h3>{{ 'payment_terms' | translate }}</h3>
+            <div class="payment-terms">
+              <p>
+                Payment is due within <strong>{{ contractDetails.paymentDue || 'N/A' }}</strong> from the date of invoice. Late payments will incur a fee of <strong>{{ contractDetails.lateFee || 'N/A' }}</strong>. Payments can be made via <strong>{{ contractDetails.customer?.paymentMethod || 'N/A' }}</strong>.
+              </p>
+            </div>
+
+            <!-- Signature Section -->
+            <h3>{{ 'signature_section' | translate }}</h3>
+            <div class="signature-section">
+              <p>
+                By signing below, both parties acknowledge that they have read, understood, and agreed to the terms and conditions of this Agreement.
+              </p>
+              <div class="signature-fields">
+                <p><strong>{{ 'company_signature' | translate }}:</strong> ______________________</p>
+                <p><strong>{{ 'customer_signature' | translate }}:</strong> ______________________</p>
+                <p><strong>{{ 'signature_date' | translate }}:</strong> ______________________</p>
+              </div>
+            </div>
+
+            <!-- Legal Disclaimer -->
+            <div class="legal-disclaimer">
+              <p>
+                <strong>Legal Disclaimer:</strong> This Agreement constitutes the entire understanding between the parties and supersedes all prior agreements, representations, or understandings, whether written or oral. Any amendments to this Agreement must be made in writing and signed by both parties.
+              </p>
+            </div>
+          </div>
+
+          <!-- Export & Print Buttons -->
+          <div class="p-mt-3 button-group">
+            <!--<button pButton type="button" label="{{ 'export_pdf' | translate }}" (click)="exportToPDF()"></button>-->
+            <!--<button pButton type="button" severity="help" label="{{ 'print_contract' | translate }}" (click)="printContract()"></button>-->
+            <button pButton type="button" severity="help" label="{{ 'print_contract' | translate }}" icon="pi pi-print" (click)="printContract()"></button>
+
+
+          </div>
+        </p-card>
+
+        <!-- Action Buttons -->
+        <p-divider></p-divider>
+        <div class="action-buttons">
+          <p-button label="{{ 'close' | translate }}"
+                    icon="pi pi-times"
+                    class="p-button-secondary"
+                    (onClick)="resetForm()">
+          </p-button>
+        </div>
+      </p-card>
+    </p-tabPanel>
+    <!-- Contract Details Tab -->
+    <!--<p-tabPanel [header]="'contract_details' | translate" *ngIf="contractDetails">
+    <p-card>-->
+    <!-- Section Heading -->
+    <!--<p-card header="{{ 'contract_agreement' | translate }}">
+   <div class="p-fluid contract-document" id="contractDocument">-->
+    <!-- Contract Title -->
+    <!--<h2 class="text-center font-bold">{{ 'contract_title' | translate }}</h2>
+  <p class="text-center contract-subtitle"><strong>{{ 'contract_subtitle' | translate }}</strong></p>
+  <p class="text-justify">{{ 'contract_intro' | translate }}</p>-->
+    <!-- Parties Involved -->
+    <!--<h3>{{ 'contract_parties' | translate }}</h3>
+  <div class="party-section">
+    <p><strong>{{ 'company' | translate }}:</strong> {{ activeRequest.companyID || 'N/A' }}</p>
+    <p><strong>{{ 'customer' | translate }}:</strong> {{ activeRequest.customerID || 'N/A' }}</p>
+  </div>-->
+    <!-- Terms & Conditions -->
+    <!--<h3>{{ 'contract_terms' | translate }}</h3>
+  <ul class="contract-terms">
+    <li>{{ 'contract_term_1' | translate }}</li>
+    <li>{{ 'contract_term_2' | translate }}</li>
+    <li>{{ 'contract_term_3' | translate }}</li>
+    <li>{{ 'contract_term_4' | translate }}</li>
+    <li>{{ 'contract_term_5' | translate }}</li>
+  </ul>-->
+    <!-- Price Details -->
+    <!--<h3>{{ 'price_details' | translate }}</h3>
+  <div class="price-details">
+    <p><strong>{{ 'customer_price' | translate }}:</strong> {{ PriceDetails?.customerPrice || 'N/A' }}</p>
+    <p><strong>{{ 'company_price' | translate }}:</strong> {{ PriceDetails?.companyPrice || 'N/A' }}</p>
+    <p><strong>{{ 'final_accepted_price' | translate }}:</strong> {{ PriceDetails?.agreedPrice || 'N/A' }}</p>
+  </div>-->
+    <!-- Payment & Date -->
+    <!--<h3>{{ 'payment_terms' | translate }}</h3>
+  <p>{{ 'payment_due' | translate }}: <strong></strong></p>
+  <p>{{ 'contract_date' | translate }}: <strong></strong></p>-->
+    <!-- Signature Section -->
+    <!--<h3>{{ 'signature_section' | translate }}</h3>
+    <div class="signature-section">
+      <p><strong>{{ 'company_signature' | translate }}:</strong> ______________________</p>
+      <p><strong>{{ 'customer_signature' | translate }}:</strong> ______________________</p>
+    </div>
+  </div>-->
+    <!-- Export & Print Buttons -->
+    <!--<div class="p-mt-3 button-group">
+      <button pButton type="button" label="{{ 'export_pdf' | translate }}" (click)="exportToPDF()"></button>
+      <button pButton type="button" label="{{ 'print_contract' | translate }}" (click)="printContract()"></button>
+    </div>
+  </p-card>-->
+    <!-- Action Buttons -->
+    <!--<p-divider></p-divider>
+      <div class="action-buttons">
+        <p-button label="{{ 'close' | translate }}"
+                  icon="pi pi-times"
+                  class="p-button-secondary"
+                  (onClick)="closeJobDialog()">
+        </p-button>
+      </div>
+    </p-card>
+  </p-tabPanel>-->
+    <!-- Truck and Driver Details Tab -->
+    <p-tabPanel [header]="'truck_and_driver_details' | translate" *ngIf="TruckDetails || DriverDetails">
+      <div class="flex align-items-center justify-content-center">
+        <div class="p-fluid w-full lg:w-10">
+          <div class="grid">
+            <!-- Truck Details Card -->
+            <div class="col-12 md:col-6" *ngIf="TruckDetails">
+              <p-card header="{{ 'truck_details' | translate }}">
+                <div class="p-fluid">
+                  <div class="grid">
+                    <div class="col-12 md:col-12">
+                      <div class="field">
+                        <label for="truckID" class="font-medium">{{ 'truck_id' | translate }}</label>
+                        <span>{{ TruckDetails.truckID || 'N/A' }}</span>
+                      </div>
+                      <div class="field">
+                        <label for="truckNumber" class="font-medium">{{ 'truck_number' | translate }}</label>
+                        <span>{{ TruckDetails.truckNumber || 'N/A' }}</span>
+                      </div>
+                      <div class="field">
+                        <label for="model" class="font-medium">{{ 'model' | translate }}</label>
+                        <span>{{ TruckDetails.model || 'N/A' }}</span>
+                      </div>
+                      <div class="field">
+                        <label for="companyID" class="font-medium">{{ 'company_id' | translate }}</label>
+                        <span>{{ TruckDetails.companyID || 'N/A' }}</span>
+                      </div>
+
+
+
+                      <div class="field">
+                        <label for="isActive" class="font-medium">{{ 'is_active' | translate }}</label>
+                        <span>{{ TruckDetails.isActive ? ('yes' | translate) : ('no' | translate) }}</span>
+                      </div>
+                      <div class="field">
+                        <label for="availableForBooking" class="font-medium">{{ 'available_for_booking' | translate }}</label>
+                        <span>{{ TruckDetails.isTruckAvilableForBooking ? ('yes' | translate) : ('no' | translate) }}</span>
+                      </div>
+                      <div class="field" *ngIf="TruckDetails.truckImage">
+                        <label for="truckImage" class="font-medium">{{ 'truck_image' | translate }}</label>
+                        <img [src]="TruckDetails.truckImage" alt="Truck Image" class="details-image" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </p-card>
+            </div>
+
+            <!-- Driver Details Card -->
+            <div class="col-12 md:col-6" *ngIf="DriverDetails">
+              <p-card header="{{ 'driver_details' | translate }}">
+                <div class="p-fluid">
+                  <div class="grid">
+                    <div class="col-4 md:col-12">
+                      <div class="field">
+                        <label for="driverID" class="font-medium">{{ 'driver_id' | translate }}</label>
+                        <span>{{ DriverDetails.driverID || 'N/A' }}</span>
+                      </div>
+                      <div class="field">
+                        <label for="fullName" class="font-medium">{{ 'full_name' | translate }}</label>
+                        <span>{{ DriverDetails.fullName || 'N/A' }}</span>
+                      </div>
+                      <div class="field">
+                        <label for="email" class="font-medium">{{ 'email' | translate }}</label>
+                        <span>{{ DriverDetails.email || 'N/A' }}</span>
+                      </div>
+                      <div class="field">
+                        <label for="phone" class="font-medium">{{ 'phone' | translate }}</label>
+                        <span>{{ DriverDetails.phone || 'N/A' }}</span>
+                      </div>
+
+
+                      <div class="field">
+                        <label for="licenseNumber" class="font-medium">{{ 'license_number' | translate }}</label>
+                        <span>{{ DriverDetails.licenseNumber || 'N/A' }}</span>
+                      </div>
+                      <div class="field">
+                        <label for="status" class="font-medium">{{ 'status' | translate }}</label>
+                        <span>{{ DriverDetails.status || 'N/A' }}</span>
+                      </div>
+                      <div class="field">
+                        <label for="licenseExpireDate" class="font-medium">{{ 'license_expire_date' | translate }}</label>
+                        <span>{{ DriverDetails.licenseExpireDate ? (DriverDetails.licenseExpireDate | date:'longDate') : 'N/A' }}</span>
+                      </div>
+                      <div class="field" *ngIf="DriverDetails.imageUrl">
+                        <label for="driverImage" class="font-medium">{{ 'driver_image' | translate }}</label>
+                        <img [src]="DriverDetails.imageUrl" alt="Driver Image" class="details-image" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </p-card>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <p-divider></p-divider>
+      <div class="action-buttons">
+        <p-button label="{{ 'close' | translate }}"
+                  icon="pi pi-times"
+                  (onClick)="resetForm()"
+                  class="p-button-secondary">
+        </p-button>
+      </div>
+    </p-tabPanel>
+
+  </p-tabView>
+</p-dialog>
+

@@ -1,0 +1,169 @@
+<div class="p-fluid">
+    <form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
+      <div class="grid">
+        <!-- Left Column -->
+        <div class="col-12 md:col-6">
+          <p-card header="{{ 'customer_registration' | translate }}" class="p-shadow-10">
+            <div class="p-fluid">
+              <!-- Full Name -->
+              <div class="field mb-3">
+                <label for="fullName">{{ 'full_name' | translate }}</label>
+                <input pInputText id="fullName" formControlName="fullName" type="text" class="w-full" placeholder="Enter Full Name" />
+                <small *ngIf="customerForm.get('fullName')?.invalid && customerForm.get('fullName')?.touched" class="p-error">
+                  Full Name is required.
+                </small>
+              </div>
+  
+              <!-- Email -->
+              <div class="field mb-3">
+                <label for="email">{{ 'email' | translate }}</label>
+                <input pInputText id="email" formControlName="email" type="email" class="w-full" placeholder="Enter Email" />
+                <small *ngIf="customerForm.get('email')?.invalid && customerForm.get('email')?.touched" class="p-error">
+                  Valid email is required.
+                </small>
+              </div>
+  
+              <!-- Phone -->
+              <div class="field mb-3">
+                <label for="phone">{{ 'phone' | translate }}</label>
+                <input pInputText id="phone" formControlName="phone" type="text" class="w-full" placeholder="Enter Phone" />
+                <small *ngIf="customerForm.get('phone')?.invalid && customerForm.get('phone')?.touched" class="p-error">
+                  Phone is required.
+                </small>
+              </div>
+  
+              <!-- Address -->
+              <div class="field mb-3">
+                <label for="address">{{ 'address' | translate }}</label>
+                <input pInputText id="address" formControlName="address" type="text" class="w-full" placeholder="Enter Address" />
+              </div>
+   
+              <!-- Password -->
+      <!-- Password -->
+<div class="field mb-3">
+    <label for="password">{{ 'password' | translate }}</label>
+    <p-password
+      id="password"
+      formControlName="password"
+      [feedback]="true"
+      placeholder="Enter Password"
+      class="w-full">
+    </p-password>
+    <small *ngIf="customerForm.get('password')?.invalid && customerForm.get('password')?.touched" class="p-error">
+      Password is required and must be at least 8 characters long.
+    </small>
+  </div>
+     
+              <!-- Confirm Password -->
+              <div class="field mb-3">
+                <label for="confirmPassword">{{ 'confirm_password' | translate }}</label>
+                <p-password
+                  id="confirmPassword"
+                  formControlName="confirmPassword"
+                  placeholder="Confirm Password"
+                  class="w-full">
+                </p-password>
+                <small *ngIf="customerForm.get('confirmPassword')?.invalid && customerForm.get('confirmPassword')?.touched" class="p-error">
+                  Passwords do not match.
+                </small>
+              </div>
+            </div>
+
+
+               <!-- Profile Image -->
+        <div class="field mb-3">
+            <label for="profileImage">{{ 'profile_image' | translate }}</label>
+            <p-fileUpload
+              id="profileImage"
+              mode="basic"
+              accept="image/*"
+              maxFileSize="1000000"
+              (onSelect)="onFileUpload($event)"
+              chooseLabel="Upload"
+              class="w-full">
+            </p-fileUpload>
+          </div>
+
+          
+          </p-card>
+        </div>
+  
+        <!-- Right Column -->
+        <div class="col-12 md:col-6">
+          <p-card header="{{ 'payment_details' | translate }}" class="p-shadow-10">
+            <div class="p-fluid">
+              <!-- Payment Method -->
+              <div class="field mb-3">
+                <label for="paymentMethod">{{ 'payment_method' | translate }}</label>
+                <p-select id="paymentMethod" formControlName="paymentMethod" [options]="paymentMethods" placeholder="Select Payment Method" class="w-full"></p-select>
+                <small *ngIf="customerForm.get('paymentMethod')?.invalid && customerForm.get('paymentMethod')?.touched" class="p-error">
+                  Payment Method is required.
+                </small>
+              </div>
+  
+              <!-- Credit Card Fields -->
+              <div *ngIf="customerForm.get('paymentMethod')?.value === 'Credit Card'">
+                <div class="field mb-3">
+                  <label for="cardNumber">{{ 'card_number' | translate }}</label>
+                  <input pInputText id="cardNumber" formControlName="cardNumber" type="text" class="w-full" placeholder="Enter Card Number" />
+                  <small *ngIf="customerForm.get('cardNumber')?.invalid && customerForm.get('cardNumber')?.touched" class="p-error">
+                    Card Number is required.
+                  </small>
+                </div>
+                <div class="field mb-3">
+                  <label for="cardType">{{ 'card_type' | translate }}</label>
+                  <p-select id="cardType" formControlName="cardType" [options]="cardTypes" placeholder="Select Card Type" class="w-full"></p-select>
+                  <small *ngIf="customerForm.get('cardType')?.invalid && customerForm.get('cardType')?.touched" class="p-error">
+                    Card Type is required.
+                  </small>
+                </div>
+                <div class="field mb-3">
+                  <label for="billingAddress">{{ 'billing_address' | translate }}</label>
+                  <input pInputText id="billingAddress" formControlName="billingAddress" type="text" class="w-full" placeholder="Enter Billing Address" />
+                </div>
+                <div class="field mb-3">
+                  <label for="expiryDate">{{ 'expiry_date' | translate }}</label>
+                  <p-datepicker id="expiryDate" formControlName="expiryDate" placeholder="Select Expiry Date" class="w-full"></p-datepicker>
+                </div>
+              </div>
+  
+              <!-- Bank Transfer Fields -->
+              <div *ngIf="customerForm.get('paymentMethod')?.value === 'Bank Transfer'">
+                <div class="field mb-3">
+                  <label for="bankName">{{ 'bank_name' | translate }}</label>
+                  <input pInputText id="bankName" formControlName="bankName" type="text" class="w-full" placeholder="Enter Bank Name" />
+                </div>
+                <div class="field mb-3">
+                  <label for="bankAccountNumber">{{ 'bank_account_number' | translate }}</label>
+                  <input pInputText id="bankAccountNumber" formControlName="bankAccountNumber" type="text" class="w-full" placeholder="Enter Bank Account Number" />
+                </div>
+                <div class="field mb-3">
+                  <label for="bankAccountHolder">{{ 'bank_account_holder' | translate }}</label>
+                  <input pInputText id="bankAccountHolder" formControlName="bankAccountHolder" type="text" class="w-full" placeholder="Enter Bank Account Holder" />
+                </div>
+              </div>
+  
+              <!-- Mobile Money Fields -->
+              <div *ngIf="customerForm.get('paymentMethod')?.value === 'Mobile Money'">
+                <div class="field mb-3">
+                  <label for="mobileNetwork">{{ 'mobile_network' | translate }}</label>
+                  <p-select id="mobileNetwork" formControlName="mobileNetwork" [options]="mobileNetworks" placeholder="Select Mobile Network" class="w-full"></p-select>
+                </div>
+                <div class="field mb-3">
+                  <label for="mobileNumber">{{ 'mobile_number' | translate }}</label>
+                  <input pInputText id="mobileNumber" formControlName="mobileNumber" type="text" class="w-full" placeholder="Enter Mobile Number" />
+                </div>
+              </div>
+            </div>
+          </p-card>
+        </div>
+
+      </div>
+  
+      <!-- Dialog Footer -->
+      <div class="flex justify-content-end mt-4 gap-3 custom-footer">
+        <button pButton type="button" label="{{ 'back_to_login' | translate }}" icon="pi pi-arrow-left" severity="help" routerLink="/account/login"></button>
+        <button pButton type="submit" label="{{ 'register' | translate }}" [disabled]="customerForm.invalid" icon="pi pi-check" severity="info"></button>
+      </div>
+    </form>
+  </div>

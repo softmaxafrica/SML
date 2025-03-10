@@ -1,0 +1,73 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<SpaRoot>..\lsclient.client</SpaRoot>
+		<SpaProxyLaunchCommand>npm start</SpaProxyLaunchCommand>
+		<SpaProxyServerUrl>https://localhost:51752</SpaProxyServerUrl>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Content Remove="wwwroot\assets\images\sys\softmaxlogo.jpg" />
+	  <Content Remove="wwwroot\assets\images\trucks\Bajaj.jpeg" />
+	  <Content Remove="wwwroot\assets\images\trucks\BigTruck.jpeg" />
+	  <Content Remove="wwwroot\assets\images\trucks\container.jpeg" />
+	  <Content Remove="wwwroot\assets\images\trucks\Flatbed_Truck.jpeg" />
+	  <Content Remove="wwwroot\assets\images\trucks\motorcycle.jpeg" />
+	  <Content Remove="wwwroot\assets\images\trucks\pickup.jpeg" />
+	  <Content Remove="wwwroot\assets\images\trucks\RefrigeratedTruck.jpeg" />
+	  <Content Remove="wwwroot\assets\images\trucks\small_truck.jpeg" />
+	  <Content Remove="wwwroot\assets\images\trucks\TankerTruck.jpeg" />
+	  <Content Remove="wwwroot\assets\images\trucks\TowTruck.jpg" />
+	  <Content Remove="wwwroot\assets\images\trucks\Van.jpeg" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.Certificate" Version="8.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.SpaProxy">
+			<Version>8.*-*</Version>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.10" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="NuGet.Protocol" Version="6.13.2" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+		<PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="6.4.0" />
+		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.4.0" />
+		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.4.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\lsclient.client\lsclient.client.esproj">
+			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+		</ProjectReference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="wwwroot\assets\images\sys\softmaxlogo.jpg" />
+	  <None Include="wwwroot\assets\images\trucks\Bajaj.jpeg" />
+	  <None Include="wwwroot\assets\images\trucks\BigTruck.jpeg" />
+	  <None Include="wwwroot\assets\images\trucks\container.jpeg" />
+	  <None Include="wwwroot\assets\images\trucks\Flatbed_Truck.jpeg" />
+	  <None Include="wwwroot\assets\images\trucks\motorcycle.jpeg" />
+	  <None Include="wwwroot\assets\images\trucks\pickup.jpeg" />
+	  <None Include="wwwroot\assets\images\trucks\RefrigeratedTruck.jpeg" />
+	  <None Include="wwwroot\assets\images\trucks\small_truck.jpeg" />
+	  <None Include="wwwroot\assets\images\trucks\TankerTruck.jpeg" />
+	  <None Include="wwwroot\assets\images\trucks\TowTruck.jpg" />
+	  <None Include="wwwroot\assets\images\trucks\Van.jpeg" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="wwwroot\assets\images\customers_profile\" />
+	</ItemGroup>
+
+</Project>

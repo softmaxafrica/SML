@@ -1,0 +1,60 @@
+<!-- Toggle Button (Always Visible) -->
+<div class="toggle-button" [ngClass]="{'collapsed': isCollapsed}">
+  <i class="pi pi-bars text-primary cursor-pointer" style="font-size: 1.5rem;" (click)="toggleDrawer()"></i>
+</div>
+
+<!-- Sidebar -->
+<div class="sidebar border-round" [ngClass]="{'collapsed': isCollapsed}">
+  <div class="flex flex-column h-full">
+    <!-- Sidebar Header -->
+    <div class="sidebar-header flex align-items-center justify-content-between px-4 py-3 border-bottom-1 surface-border">
+      <span class="inline-flex align-items-center gap-2">
+        <svg width="31"
+             height="33"
+             viewBox="0 0 31 33"
+             fill="none"
+             xmlns="http://www.w3.org/2000/svg"
+             class="block mx-auto">
+          <!-- SVG content here -->
+        </svg>
+        <span class="font-semibold text-xl text-primary sidebar-title" [ngClass]="{'visible': !isCollapsed}">Logy Sync Portal</span>
+      </span>
+    </div>
+
+    <!-- Menu -->
+    <div class="overflow-y-auto flex-grow-1">
+      <ul class="list-none p-0 m-0">
+        <ng-container *ngFor="let item of menuItems">
+          <li>
+            <a [routerLink]="item.routerLink" class="menu-item p-3 flex align-items-center cursor-pointer">
+              <i [class]="item.icon + ' mr-3'" style="font-size: 1.5rem;"></i>
+              <span class="font-medium label" [ngClass]="{'visible': !isCollapsed}">{{ item.label }}</span>
+            </a>
+          </li>
+        </ng-container>
+      </ul>
+    </div>
+
+    <!-- Profile Management at the Bottom -->
+    <div class="p-3 border-top-1 surface-border">
+      <div class="flex align-items-center gap-3 cursor-pointer" (click)="toggleProfileMenu($event)">
+        <!-- Display the logged-in user's profile image -->
+        <p-avatar [image]="loggedInUser?.profileImagePath || 'assets/images/default-avatar.png'" shape="circle" size="large"></p-avatar>
+        <div *ngIf="!isCollapsed">
+          <!-- Display the logged-in user's name -->
+          <span class="font-medium">{{ loggedInUser?.email || 'Guest' }}</span>
+          <p-menu #profileMenu [model]="profileItems" [popup]="true"></p-menu>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Content Area -->
+<div class="main-content" [ngClass]="{'collapsed': isCollapsed}">
+  <div class="custom-card">
+    <p-toast position="top-right" />
+    <app-loading></app-loading>
+    <router-outlet></router-outlet>
+  </div>
+</div>

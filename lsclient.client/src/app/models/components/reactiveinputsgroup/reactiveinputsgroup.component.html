@@ -1,0 +1,148 @@
+<div class="p-fluid">
+    <div class="grid">
+      <!-- Left Column -->
+      <div class="col-12 md:col-6">
+        <ng-container *ngFor="let field of leftFields">
+          <div class="field mb-3">
+            <label [for]="field.key">{{ field.label }}</label>
+            <ng-container [ngSwitch]="field.type">
+              <!-- Input Text -->
+              <input
+                *ngSwitchCase="'text'"
+                pInputText
+                [id]="field.key"
+                [(ngModel)]="formObject[field.key]"
+                [ngModelOptions]="{ standalone: true }"
+                [disabled]="field.disabled"
+                [placeholder]="'Enter ' + field.label"
+                class="w-full"
+              />
+  
+              <!-- Input Email -->
+              <input
+                *ngSwitchCase="'email'"
+                pInputText
+                type="email"
+                [id]="field.key"
+                [(ngModel)]="formObject[field.key]"
+                [ngModelOptions]="{ standalone: true }"
+                [disabled]="field.disabled"
+                [placeholder]="'Enter ' + field.label"
+                class="w-full"
+              />
+  
+              <!-- Toggle Switch -->
+              <p-toggleSwitch
+                *ngSwitchCase="'toggle'"
+                [id]="field.key"
+                [(ngModel)]="formObject[field.key]"
+                [ngModelOptions]="{ standalone: true }"
+                class="w-full"
+              ></p-toggleSwitch>
+  
+              <!-- Datepicker -->
+              <p-datepicker
+                *ngSwitchCase="'datepicker'"
+                [id]="field.key"
+                [(ngModel)]="formObject[field.key]"
+                [ngModelOptions]="{ standalone: true }"
+                [placeholder]="'Select ' + field.label"
+                class="w-full"
+              ></p-datepicker>
+            </ng-container>
+          </div>
+        </ng-container>
+      </div>
+  
+      <!-- Right Column -->
+      <div class="col-12 md:col-6">
+        <ng-container *ngFor="let field of rightFields">
+          <div class="field mb-3">
+            <label [for]="field.key">{{ field.label }}</label>
+            <ng-container [ngSwitch]="field.type">
+              <!-- Input Text -->
+              <input
+                *ngSwitchCase="'text'"
+                pInputText
+                [id]="field.key"
+                [(ngModel)]="formObject[field.key]"
+                [ngModelOptions]="{ standalone: true }"
+                [disabled]="field.disabled"
+                [placeholder]="'Enter ' + field.label"
+                class="w-full"
+              />
+  
+              <!-- Input Email -->
+              <input
+                *ngSwitchCase="'email'"
+                pInputText
+                type="email"
+                [id]="field.key"
+                [(ngModel)]="formObject[field.key]"
+                [ngModelOptions]="{ standalone: true }"
+                [disabled]="field.disabled"
+                [placeholder]="'Enter ' + field.label"
+                class="w-full"
+              />
+  
+              <!-- Toggle Switch -->
+              <p-toggleSwitch
+                *ngSwitchCase="'toggle'"
+                [id]="field.key"
+                [(ngModel)]="formObject[field.key]"
+                [ngModelOptions]="{ standalone: true }"
+                class="w-full"
+              ></p-toggleSwitch>
+  
+              <!-- Datepicker -->
+              <p-datepicker
+                *ngSwitchCase="'datepicker'"
+                [id]="field.key"
+                [(ngModel)]="formObject[field.key]"
+                [ngModelOptions]="{ standalone: true }"
+                [placeholder]="'Select ' + field.label"
+                class="w-full"
+              ></p-datepicker>
+  
+              <!-- File Upload -->
+              <p-fileUpload
+                *ngSwitchCase="'file'"
+                [id]="field.key"
+                mode="basic"
+                chooseLabel="Upload"
+                [showUploadButton]="false"
+                [showCancelButton]="false"
+                (onSelect)="onFileUpload($event, field.key)"
+                class="w-full"
+              ></p-fileUpload>
+            </ng-container>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  
+    <!-- Dialog Footer -->
+    <div class="flex justify-content-end gap-3 custom-footer">
+      <p-button
+        *ngFor="let button of buttons"
+        [label]="button.label"
+        [icon]="button.icon"
+        [class]="button.class"
+        [severity]="button.severity"
+        (click)="onButtonClick(button.action)"
+      ></p-button>
+    </div>
+  </div>
+
+  
+  <style>
+    p-datepicker {
+  width: 100% !important;
+  display: block;
+}
+
+p-datepicker .p-inputtext {
+  width: 100% !important;
+}
+
+  </style>

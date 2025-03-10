@@ -1,0 +1,68 @@
+/* Field Styling */
+.field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eee;
+  width: 100%;   
+}
+
+  .field label {
+    font-weight: 500;
+    color: #333;
+    margin-right: 1rem;
+    flex: 1;  
+  }
+
+  .field span {
+    font-size: 1rem;
+    color: #555;
+    text-align: right;
+    flex: 1;  
+  }
+
+/* Image Styling */
+.details-image {
+  max-width: 100px;
+  max-height: 100px;
+  border-radius: 8px;
+  border: 2px solid #ddd;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+.contract-document {
+  padding: 20px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-family: "Arial", sans-serif;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.font-bold {
+  font-weight: bold;
+}
+
+.party-section, .price-details, .signature-section {
+  margin-top: 15px;
+}
+
+.contract-terms li {
+  margin-bottom: 8px;
+}
+
+.button-group {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}

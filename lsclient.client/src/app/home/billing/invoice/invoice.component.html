@@ -1,0 +1,395 @@
+
+<div class="flex justify-content-end gap-4 mb-3">
+  <p-button label="{{'manage_columns'| translate}}" [rounded]="true" icon="pi pi-cog" (click)="columnDialogVisible = true" severity="help"  />
+  <p-button label="{{'export_to_excel'| translate}}" [rounded]="true" icon="pi pi-download" badgeSeverity="warn" styleClass="m-0"  severity="info"/>
+
+</div>
+
+
+<p-table *ngIf="filteredInvoices?.length"
+         [value]="filteredInvoices"
+         dataKey="invoiceNumber"
+         [tableStyle]="{ 'min-width': '60rem', 'overflow': 'hidden' }"
+         [paginator]="true"
+         [rows]="5"
+         [rowsPerPageOptions]="[5, 10, 20]"
+         class="custom-table">
+
+
+  <ng-template pTemplate="caption">
+    <div class="flex justify-content-end gap-4  ">
+      <input pInputText type="text" [(ngModel)]="searchTerm"
+             (input)="onSearch()" placeholder="Search" icon="pi pi-cog"
+             styleClass="m-0" />
+    </div>
+  </ng-template>
+  <!-- Table Header dynamically generated -->
+  <!-- <div class="flex justify-content-start gap-4 mb-3" style="background-color: transparent;">
+    <p-button  [rounded]="true"       styleClass="m-0" [outlined]="true"> -->
+  <!-- </p-button> -->
+  <!-- </div>  -->
+
+  <ng-template pTemplate="header">
+    <tr>
+      <th *ngFor="let col of targetColumns" pSortableColumn="{{ col.field }}">
+        {{ col.header }}
+        <p-sortIcon field="{{ col.field }}"></p-sortIcon>
+      </th>
+      <th style="width: 4rem">Action</th>
+
+    </tr>
+  </ng-template>
+
+  <!-- Table Body dynamically generated -->
+  <ng-template pTemplate="body" let-invoice>
+    <tr>
+      <td *ngFor="let col of targetColumns">
+        <!-- If the column is "status", show p-tag with severity -->
+        <ng-container *ngIf="col.field === 'status'; else showValue">
+          <p-tag [value]="getNestedValue(invoice, col.field)"
+                 [severity]="functions.getSeverity(getNestedValue(invoice, col.field))"></p-tag>
+        </ng-container>
+
+        <!-- Otherwise, display the nested field value -->
+        <ng-template #showValue>
+          {{ getNestedValue(invoice, col.field) }}
+        </ng-template>
+
+      </td>
+      <td>
+        <p-button type="button" icon="pi pi-search"
+                  (click)="showInvoiceDetails(invoice)" />
+      </td>
+    </tr>
+  </ng-template>
+
+
+  <!-- Empty message -->
+  <ng-template pTemplate="emptymessage">
+    <tr>
+      <td [attr.colspan]="targetColumns.length" class="text-center">
+        No Invoice  found.
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+<!-- Column Management Dialog -->
+<p-dialog [(visible)]="columnDialogVisible" [header]="'Manage Columns'" [modal]="true" [responsive]="true" [style]="globalColumnControlService.getColumnDialogConfig()">
+  <p-fieldset legend="Columns" [toggleable]="true">
+    <p-pickList [source]="sourceColumns" [target]="targetColumns" sourceHeader="Available Columns" targetHeader="Selected Columns"
+                filterBy="field"
+                sourceFilterPlaceholder="Search by name"
+                targetFilterPlaceholder="Search by name"
+                [dragdrop]="true" [responsive]="true" breakpoint="1400px">
+      <ng-template let-column pTemplate="item">
+        <div class="flex flex-wrap p-2 align-items-center gap-3">
+          <span class="font-bold">{{ column.header }}</span>
+        </div>
+      </ng-template>
+    </p-pickList>
+  </p-fieldset>
+  <p-footer>
+    <p-button label="Close" icon="pi pi-times" (click)="columnDialogVisible = false"></p-button>
+  </p-footer>
+</p-dialog>
+
+
+
+ <!-- INVOICE DETAILS DIALOG -->
+<p-dialog [header]="'invoice_details' | translate"
+          *ngIf="selectedInvoice"
+          [responsive]="true" 
+          [closable]="true" class="invoice-dialog"
+          [maximizable]="true"
+          [style]="{ width: '70vw' }"
+
+          [(visible)]="displayDialog" [modal]="true">
+
+  <!-- Header Section -->
+  <div class="header-section">
+    <h2>{{'invoice_id#' | translate}} {{ selectedInvoice.invoiceNumber }}</h2>
+    <p><b>{{'issue_date' | translate}}:</b> {{ selectedInvoice.issueDate }}</p>
+    <p>
+      <b>{{'status' | translate}}:</b>
+      <p-tag [value]="selectedInvoice.status || ''"
+             [severity]="functions.getSeverity(selectedInvoice.status || '')"
+             class="ml-3"></p-tag>
+    </p>
+   
+  </div>
+
+ 
+  <p-divider></p-divider>
+
+  <!-- Tab View -->
+  <p-tabView>
+    <!-- Invoice Details Tab -->
+    <p-tabPanel [header]="'invoice_details' | translate" *ngIf="selectedInvoice">
+      <div class="flex align-items-center justify-content-center">
+        <p-card>
+        <div class="p-fluid w-full lg:w-14" id="invoiceDocument">
+          <div class="grid">
+            <!-- Invoice Details Card -->
+            <div class="invoice-container">
+              <!-- Header with Logo and Company Name -->
+              <div class="invoice-header">
+                <div class="header-content">
+                  <img src="path/to/your/logo.png" alt="Softmax Logistics Logo" class="logo" />
+                  <h1 class="company-name">Softmax Logistics</h1>
+                </div>
+                <div class="invoice-meta">
+                  <p><strong>Invoice Number:</strong> {{selectedInvoice.invoiceNumber}}</p>
+                  <p><strong>Issue Date:</strong> {{selectedInvoice.issueDate}}</p>
+                  <p><strong>Due Date:</strong> {{selectedInvoice.dueDate}}</p>
+                </div>
+              </div>
+
+              <!-- Company and Customer Details -->
+              <div class="details-section">
+                <div class="company-details">
+                  <h3>{{selectedInvoice.companyName}}</h3>
+                  <p>{{selectedInvoice.companyAddress}}</p>
+                  <p>{{selectedInvoice.companyCity}}, {{selectedInvoice.companyCountry}}</p>
+                  <p>Email: {{selectedInvoice.companyEmail}}</p>
+                  <p>Phone: {{selectedInvoice.companyPhone}}</p>
+                </div>
+
+                <div class="customer-details">
+                  <h3>Bill To:</h3>
+                  <p>{{selectedInvoice.customerDetails.fullName || 'N/A'}}</p>
+                  <p>{{selectedInvoice.customerDetails.address}}</p>
+                  <p>Email: {{selectedInvoice.customerDetails.email}}</p>
+                  <p>Phone: {{selectedInvoice.customerDetails.phone}}</p>
+                </div>
+              </div>
+
+              <!-- Job Details Table -->
+              <table class="invoice-table">
+                <thead>
+                  <tr>
+                    <th>Job Request ID</th>
+                    <th>Operational Charge</th>
+                    <th>Service Charge</th>
+                    <th>Total Amount</th>
+                    <th>Total Paid Amount</th>
+                    <th>Owed Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{{selectedInvoice.jobRequestID}}</td>
+                    <td>${{selectedInvoice.operationalCharge}}</td>
+                    <td>${{selectedInvoice.serviceCharge}}</td>
+                    <td>${{selectedInvoice.totalAmount}}</td>
+                    <td>${{selectedInvoice.totalPaidAmount}}</td>
+                    <td>${{selectedInvoice.owedAmount}}</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <!-- Total Section -->
+              <div class="total-section">
+                <h3>Summary</h3>
+                <div class="total-line"><strong>Service Charge:</strong> ${{selectedInvoice.serviceCharge}}</div>
+                <div class="total-line"><strong>Operational Charge:</strong> ${{selectedInvoice.operationalCharge}}</div>
+                <div class="total-line"><strong>Total Amount:</strong> ${{selectedInvoice.totalAmount}}</div>
+                <div class="total-line"><strong>Total Paid:</strong> ${{selectedInvoice.totalPaidAmount}}</div>
+                <div class="total-line"><strong>Owed Amount:</strong> ${{selectedInvoice.owedAmount}}</div>
+              </div>
+
+              <!-- Status Section -->
+              <div class="status-section">
+                <p><strong>Status:</strong> {{selectedInvoice.status}}</p>
+              </div>
+
+              <!-- Terms and Conditions -->
+              <div class="terms">
+                <h3>Terms and Conditions</h3>
+                <ul>
+                  <li>Payment due within {{selectedInvoice.dueDate}} from the issue date.</li>
+                  <li>Late payments may incur additional charges.</li>
+                  <li>For any inquiries, please reference the Job Request ID.</li>
+                </ul>
+              </div>
+
+              <!-- Footer -->
+              <div class="footer">
+                <p>Thank you for doing business with {{selectedInvoice.companyName}}!</p>
+                <p>If you have any questions, please contact us at {{selectedInvoice.companyEmail}}.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-content-end gap-8 mt-3">
+          <button pButton type="button" severity="help" label="{{ 'print_contract' | translate }}" icon="pi pi-print" (click)="printContract()"></button>
+      </div>
+      </p-card>
+       
+      </div>
+    </p-tabPanel>
+
+     
+      <!-- Payments Details Tab -->
+<p-tabPanel [header]="'payments_details' | translate" *ngIf="selectedInvoice">
+  <div class="flex justify-content-end gap-4 mb-3">
+    <p-button label="{{'recordPayment' | translate}}" icon="pi pi-upload"  [rounded]="true" severity="help" (click)="onAddPayment()"  *ngIf="selectedInvoice.status !== 'PAID'"/>
+   </div>
+  <div class="p-fluid">
+    <!-- Use PrimeFlex's grid classes for layout -->
+    <div class="grid">
+      <!-- Left Column: Payment Details -->
+      <div class="col-12 md:col-8 align-items-center justify-content-center"  *ngIf="selectedInvoice.status !== 'PAID'">
+
+        <p-card header="{{ 'payment_details' | translate }}">
+
+          <div class="p-fluid" *ngIf="isRecordPayment">
+
+            <!-- Payment Form Details Section -->
+          <div >
+
+                <!-- Amount Paid Input -->
+                <input id="amountPaid"
+       pInputText
+       [(ngModel)]="payment.amountPaid"
+       type="number"
+       placeholder="Enter Amount Paid"
+       aria-describedby="amountPaidHelp"
+       class="w-full"
+       [max]="selectedInvoice?.owedAmount"
+       (input)="validateAmount()" />
+
+            <small id="amountPaidHelp" class="text-secondary">
+             Enter the amount paid for the invoice. Max: {{ selectedInvoice?.owedAmount }}
+            </small>
+             <div *ngIf="amountInvalid" class="text-red-500 text-sm">
+           Amount cannot be Zero or exceed {{ selectedInvoice?.owedAmount }}
+            </div>
+
+              <!-- Payment Method Dropdown -->
+              <div class="field mb-3">
+                <label for="paymentMethod">{{ 'payment_method' | translate }}</label>
+                <p-select id="paymentMethod"
+                          [options]="paymentMethods"
+                          [(ngModel)]="payment.paymentMethod"
+                          placeholder="Select Payment Method"
+                          aria-describedby="paymentMethodHelp"
+                          class="w-full"></p-select>
+                <small id="paymentMethodHelp" class="text-secondary">Select the payment method used.</small>
+              </div>
+
+              <div class="field mb-3">
+                <label for="referenceNumber">{{ 'reference_number' | translate }}</label>
+                <input id="referenceNumber"
+                       pInputText
+                       [(ngModel)]="payment.referenceNumber"
+                       placeholder="Enter Reference Number (Optional)"
+                       aria-describedby="referenceNumberHelp"
+                       class="w-full" />
+                <small id="referenceNumberHelp" class="text-secondary">Optional reference number for the payment.</small>
+              </div>
+
+              <!-- Currency Dropdown -->
+              <div class="field mb-3">
+                <label for="currency">{{ 'currency' | translate }}</label>
+                <p-select id="currency"
+                [options]="currencies"
+                [(ngModel)]="payment.currency"
+                placeholder="Select Currency Type"
+                aria-describedby="currencyHelp"
+                (onChange)="validateCurrency()"
+                class="w-full">
+      </p-select>
+                <small id="currencyHelp" class="text-secondary">Select the currency type for the payment.</small>
+              </div>
+
+              <p-footer class="mt-4">
+                <div class="flex justify-content-start gap-8 mb-3">
+                <button pButton 
+                         label="Save Payment"
+                          severity="help"
+                         (click)="savePayment()" 
+                         [disabled]="isSaveButtonDisabled">
+                        </button>
+                <button pButton
+                        label="Cancel"
+                        icon="pi pi-times"
+                        severity="contrast"
+                         (click)="closePaymentDialog()"
+                        aria-label="Cancel Payment"></button>
+                        </div>
+              </p-footer>
+
+
+            </div>
+          </div>
+        </p-card>
+      </div>
+ 
+
+      <!-- Right Column:  Payment list Table -->
+      <div class="col-12 md:col-12"  *ngIf="filteredPayments?.length">
+        <p-card header="{{ 'payments_details' | translate }}">
+          <div class="p-fluid">
+            <!-- Reference Number Input -->
+            <p-table *ngIf="filteredPayments?.length"
+                     [value]="filteredPayments"
+                     dataKey="paymentID"
+                     [tableStyle]="{ 'min-width': '60rem', 'overflow': 'hidden' }"
+                     [paginator]="true"
+                     [rows]="5"
+                     [rowsPerPageOptions]="[5, 10, 20]"
+                     class="custom-table">
+
+              <ng-template pTemplate="header">
+                <tr>
+                  <th *ngFor="let col of paymentsColumns" pSortableColumn="{{ col.field }}">
+                    {{ col.header }}
+                    <p-sortIcon field="{{ col.field }}"></p-sortIcon>
+                  </th>
+                </tr>
+              </ng-template>
+
+              <ng-template pTemplate="body" let-payment>
+                <tr>
+                  <td *ngFor="let col of paymentsColumns">
+                    <ng-container *ngIf="col.field === 'status'; else showValue">
+                      <p-tag [value]="getNestedValue(payment, col.field)"
+                             [severity]="functions.getSeverity(getNestedValue(payment, col.field))"></p-tag>
+                    </ng-container>
+                    <ng-template #showValue>
+                      {{ getNestedValue(payment, col.field) }}
+                    </ng-template>
+                  </td>
+
+                </tr>
+              </ng-template>
+
+              <ng-template pTemplate="emptymessage">
+                <tr>
+                  <td [attr.colspan]="targetColumns.length" class="text-center">
+                    No Payments found.
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+
+
+
+          </div>
+        </p-card>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dialog Footer -->
+</p-tabPanel>
+  </p-tabView>
+
+  <p-divider></p-divider>
+
+  <!-- Action Buttons -->
+  <div class="action-buttons">
+    <p-button label="{{ 'close' | translate }}" icon="pi pi-times" severity="contrast" [rounded]="true"></p-button>
+  </div>
+</p-dialog>
+

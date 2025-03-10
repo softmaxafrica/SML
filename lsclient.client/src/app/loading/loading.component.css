@@ -1,0 +1,162 @@
+/*.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.9);  Soft white overlay 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  z-index: 10000;
+  backdrop-filter: blur(5px);  Adds a subtle blur effect 
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.spinner-circle {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #3b82f6, #9333ea);
+  animation: pulse 1.4s infinite ease-in-out;
+}
+
+  .spinner-circle:nth-child(2) {
+    animation-delay: -0.2s;
+  }
+
+  .spinner-circle:nth-child(3) {
+    animation-delay: -0.4s;
+  }
+
+  .spinner-circle:nth-child(4) {
+    animation-delay: -0.6s;
+  }
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+}
+
+.loading-text {
+  margin-top: 16px;
+  font-size: 1.5rem;
+  color: #1e3a8a;
+  font-weight: bold;
+  letter-spacing: 1px;
+  animation: fadeIn 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0.6;
+  }
+
+  to {
+    opacity: 1;
+  }
+}*/
+ /* Container for centering the loading animation */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7); /* Semi-transparent black background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  z-index: 10000;
+  backdrop-filter: blur(5px); /* Apply blur effect to background */
+}
+
+/* Cube spinner container with 3D perspective */
+.cube-spinner {
+  width: 60px; /* Slightly larger for better visibility */
+  height: 60px; /* Slightly larger for better visibility */
+  position: relative;
+  transform-style: preserve-3d;
+  animation: rotateCube 1.6s infinite ease-in-out; /* Smooth animation */
+}
+
+/* Individual cube style with modern gradient colors */
+.cube {
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  background: linear-gradient(45deg, #00bcd4, #2196f3, #673ab7); /* Professional modern gradient colors (light blue to purple) */
+  opacity: 0.9; /* Slight transparency for more subtlety */
+  border-radius: 12px; /* Smooth rounded edges for a modern feel */
+}
+
+/* Position each cube in 3D space */
+.cube:nth-child(1) {
+  transform: rotateX(0deg) translateZ(30px); /* Front face */
+}
+
+.cube:nth-child(2) {
+  transform: rotateY(90deg) translateZ(30px); /* Right face */
+}
+
+.cube:nth-child(3) {
+  transform: rotateY(180deg) translateZ(30px); /* Back face */
+}
+
+.cube:nth-child(4) {
+  transform: rotateY(270deg) translateZ(30px); /* Left face */
+}
+
+.cube:nth-child(5) {
+  transform: rotateX(90deg) translateZ(30px); /* Top face */
+}
+
+.cube:nth-child(6) {
+  transform: rotateX(-90deg) translateZ(30px); /* Bottom face */
+}
+
+/* 3D rotation of the entire spinner container */
+@keyframes rotateCube {
+  0% {
+    transform: rotateX(0deg) rotateY(0deg); /* Start rotation */
+  }
+
+  100% {
+    transform: rotateX(360deg) rotateY(360deg); /* Complete 360-degree rotation */
+  }
+}
+
+/* Loading text with fade-in effect */
+.loading-text {
+  margin-top: 20px;
+  font-size: 1.5rem;
+  color: #00bcd4; /* Light blue to match the cube gradient */
+  font-weight: bold;
+  letter-spacing: 1px;
+  animation: fadeIn 1.2s ease-in-out infinite alternate;
+}
+
+/* Fade-in/out effect for loading text */
+@keyframes fadeIn {
+  0%, 100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}

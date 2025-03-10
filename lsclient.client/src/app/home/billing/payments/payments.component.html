@@ -1,0 +1,201 @@
+<div class="flex justify-content-end gap-4 mb-3">
+  <p-button label="{{'recordPayment' | translate}}" icon="pi pi-upload" [rounded]="true" severity="help" (click)="onAddPayment()" />
+  <p-button label="{{'manage_columns'| translate}}" [rounded]="true" icon="pi pi-cog" (click)="columnDialogVisible = true" styleClass="m-0" severity="info" />
+  <p-button label="{{'export_to_excel'| translate}}" [rounded]="true" icon="pi pi-download" badgeSeverity="warn" styleClass="m-0" />
+</div>
+
+<p-table *ngIf="filteredPayments?.length"
+         [value]="filteredPayments"
+         dataKey="paymentID"
+         [tableStyle]="{ 'min-width': '60rem', 'overflow': 'hidden' }"
+         [paginator]="true"
+         [rows]="5"
+         [rowsPerPageOptions]="[5, 10, 20]"
+         class="custom-table">
+
+  <ng-template pTemplate="caption">
+    <div class="flex justify-content-end gap-4">
+      <input pInputText type="text" [(ngModel)]="searchTerm"
+             (input)="onSearch()" placeholder="Search" icon="pi pi-cog"
+             styleClass="m-0" />
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="header">
+    <tr>
+      <th *ngFor="let col of targetColumns" pSortableColumn="{{ col.field }}">
+        {{ col.header }}
+        <p-sortIcon field="{{ col.field }}"></p-sortIcon>
+      </th>
+      <th style="width: 4rem">Action</th>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="body" let-payment>
+    <tr>
+      <td *ngFor="let col of targetColumns">
+        <ng-container *ngIf="col.field === 'status'; else showValue">
+          <p-tag [value]="getNestedValue(payment, col.field)"
+                 [severity]="functions.getSeverity(getNestedValue(payment, col.field))"></p-tag>
+        </ng-container>
+        <ng-template #showValue>
+          {{ getNestedValue(payment, col.field) }}
+        </ng-template>
+      </td>
+      <td>
+        <p-button type="button" icon="pi pi-search" />
+      </td>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="emptymessage">
+    <tr>
+      <td [attr.colspan]="targetColumns.length" class="text-center">
+        No Payments found.
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+
+<!-- Column Management Dialog -->
+<p-dialog [(visible)]="columnDialogVisible" [header]="'Manage Columns'" [modal]="true" [responsive]="true" [style]="globalColumnControlService.getColumnDialogConfig()">
+  <p-fieldset legend="Columns" [toggleable]="true">
+    <p-pickList [source]="sourceColumns" [target]="targetColumns" sourceHeader="Available Columns" targetHeader="Selected Columns"
+                filterBy="field"
+                sourceFilterPlaceholder="Search by name"
+                targetFilterPlaceholder="Search by name"
+                [dragdrop]="true" [responsive]="true" breakpoint="1400px">
+      <ng-template let-column pTemplate="item">
+        <div class="flex flex-wrap p-2 align-items-center gap-3">
+          <span class="font-bold">{{ column.header }}</span>
+        </div>
+      </ng-template>
+    </p-pickList>
+  </p-fieldset>
+  <p-footer>
+    <p-button label="Close" icon="pi pi-times" (click)="columnDialogVisible = false"></p-button>
+  </p-footer>
+</p-dialog>
+
+<!-- PAYMENT DETAILS DIALOG -->
+ <p-dialog [(visible)]="displayDialog" header="Payment Details" [modal]="true" [style]="{ width: '70vw', height: '550px' }">
+  
+  <div class="p-fluid">
+    <!-- Use PrimeFlex's grid classes for layout -->
+    <div class="grid">
+      <!-- Left Column: Payment Details -->
+      <div class="col-12 md:col-6">
+        <p-card header="{{ 'payment_details' | translate }}">
+          <div class="p-fluid">
+            <!-- Invoice Number Input Section (Shown only when form is hidden) -->
+            <div *ngIf="!showPaymentFormDetails"> 
+              <div class="field mb-3">
+                <label for="invoiceNumber">{{ 'invoice_number' | translate }}</label>
+                <div class="p-inputgroup">
+                  <input id="invoiceNumber"
+                         pInputText
+                         [(ngModel)]="payment.invoiceNumber"
+                         type="number"
+                         placeholder="Enter Invoice Number"
+                         aria-describedby="invoiceNumberHelp"
+                         class="w-full" />
+                </div>
+                <small id="invoiceNumberHelp" class="text-secondary">Enter the invoice number to proceed.</small>
+              </div>
+
+              <!-- Search Button -->
+              <div class="field mb-3">
+                <button pButton
+                        type="button"
+                        [label]="'search' | translate"
+                        (click)="loadCompanyInvoicesDetails(payment.invoiceNumber)"
+                        aria-label="Search Invoice"></button>
+              </div>
+            </div>
+
+            <!-- Payment Form Details Section (Shown when form is visible) -->
+            <div *ngIf="showPaymentFormDetails">
+              <!-- Invoice Number (Disabled) -->
+              <div class="field mb-3">
+                <label for="invoiceNumber">{{ 'invoice_number' | translate }}</label>
+                <input id="invoiceNumber"
+                       pInputText
+                       [(ngModel)]="payment.invoiceNumber"
+                       type="number"
+                       disabled
+                       aria-describedby="invoiceNumberDisabledHelp"
+                       class="w-full" />
+                <small id="invoiceNumberDisabledHelp" class="text-secondary">Invoice number is auto-filled.</small>
+              </div>
+
+              <!-- Amount Paid Input -->
+              <div class="field mb-3">
+                <label for="amountPaid">{{ 'amount_paid' | translate }}</label>
+                <input id="amountPaid"
+                       pInputText
+                       [(ngModel)]="payment.amountPaid"
+                       type="number"
+                       placeholder="Enter Amount Paid"
+                       aria-describedby="amountPaidHelp"
+                       class="w-full" />
+                <small id="amountPaidHelp" class="text-secondary">Enter the amount paid for the invoice.</small>
+              </div>
+
+              <!-- Payment Method Dropdown -->
+              <div class="field mb-3">
+                <label for="paymentMethod">{{ 'payment_method' | translate }}</label>
+                <p-select id="paymentMethod"
+                          [options]="paymentMethods"
+                          [(ngModel)]="payment.paymentMethod"
+                          placeholder="Select Payment Method"
+                          aria-describedby="paymentMethodHelp"
+                          class="w-full"></p-select>
+                <small id="paymentMethodHelp" class="text-secondary">Select the payment method used.</small>
+              </div>
+
+              <!-- Reference Number Input -->
+              <div class="field mb-3">
+                <label for="referenceNumber">{{ 'reference_number' | translate }}</label>
+                <input id="referenceNumber"
+                       pInputText
+                       [(ngModel)]="payment.referenceNumber"
+                       placeholder="Enter Reference Number (Optional)"
+                       aria-describedby="referenceNumberHelp"
+                       class="w-full" />
+                <small id="referenceNumberHelp" class="text-secondary">Optional reference number for the payment.</small>
+              </div>
+
+              <!-- Currency Dropdown -->
+              <div class="field mb-3">
+                <label for="currency">{{ 'currency' | translate }}</label>
+                <p-select id="currency"
+                          [options]="currencies"
+                          [(ngModel)]="payment.currency"
+                          placeholder="Select Currency Type"
+                          aria-describedby="currencyHelp"
+                          class="w-full"></p-select>
+                <small id="currencyHelp" class="text-secondary">Select the currency type for the payment.</small>
+              </div>
+            </div>
+
+            <!-- Dialog Footer -->
+            <p-footer class="mt-4">
+              <button pButton
+                      label="Save"
+                      icon="pi pi-check"
+                      (click)="savePayment()"
+                      aria-label="Save Payment"
+                      class="mr-2"></button>
+              <button pButton
+                      label="Cancel"
+                      icon="pi pi-times"
+                      class="p-button-secondary"
+                      (click)="closePaymentDialog()"
+                      aria-label="Cancel Payment"></button>
+            </p-footer>
+          </div>
+        </p-card>
+      </div>
+    </div>
+  </div>
+</p-dialog>

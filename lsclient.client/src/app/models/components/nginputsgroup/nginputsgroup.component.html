@@ -1,0 +1,41 @@
+<div class="p-fluid">
+  <ng-container *ngFor="let field of fields">
+    <div class="field mb-3">
+      <label [for]="field.key">{{ field.label | translate }}</label>
+      <ng-container [ngSwitch]="field.type">
+        <!-- Input Text -->
+        <input 
+          *ngSwitchCase="'text'" 
+          pInputText 
+          [id]="field.key" 
+          [(ngModel)]="field.value" 
+          [disabled]="field.disabled" 
+          class="w-full" />
+
+        <!-- Input Email -->
+        <input 
+          *ngSwitchCase="'email'" 
+          pInputText 
+          type="email" 
+          [id]="field.key" 
+          [(ngModel)]="field.value" 
+          [disabled]="field.disabled" 
+          class="w-full" />
+
+        <!-- Toggle Switch -->
+        <p-toggleSwitch 
+          *ngSwitchCase="'toggle'" 
+          [(ngModel)]="field.value" 
+          class="w-full">
+        </p-toggleSwitch>
+
+        <!-- datepicker -->
+        <p-datepicker 
+          *ngSwitchCase="'datepicker'" 
+          [(ngModel)]="field.value" 
+          class="w-full">
+        </p-datepicker>
+      </ng-container>
+    </div>
+  </ng-container>
+</div>

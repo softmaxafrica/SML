@@ -1,0 +1,196 @@
+/* You can add global styles to this file, and also import other style files */
+@import "primeicons/primeicons.css";
+
+
+/* Add this to your component's CSS file or global styles */
+:host ::ng-deep .p-password {
+  width: 100%;
+}
+
+:host ::ng-deep .p-password input {
+  width: 100%;
+}
+  a {
+     /* background: linear-gradient(270deg, red, blue); */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+     text-decoration: none;
+    background-color: rgb(30, 31, 28);
+    
+
+  }
+
+a:hover { 
+    background-color:    blueviolet;
+    color: white;
+  }
+ 
+  
+  li a:hover {
+  background-color:    #10b981;
+  color: white;
+}
+ 
+  
+  .card-container {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  .card-item {
+    flex: 1 1 22%;  
+    min-width: 250px;  
+    margin-bottom: 5px;  
+    }
+  
+  .large-card-item {
+    flex: 1 1 48%;  
+    min-width: 300px;  
+    margin-bottom: 5px;
+    
+  } 
+
+ /* General Styling */
+.invoice-container {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-family: Arial, sans-serif;
+  color: #333;
+}
+
+.invoice-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.logo {
+  max-width: 100px;
+  margin-right: 1rem;
+}
+
+.company-name {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.invoice-meta {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.details-section {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.company-details, .customer-details {
+  flex: 1;
+  margin-right: 1rem;
+}
+
+  .company-details h3, .customer-details h3 {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #34495e;
+    margin-bottom: 0.5rem;
+  }
+
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2rem;
+}
+
+  .invoice-table th, .invoice-table td {
+    border: 1px solid #ddd;
+    padding: 0.75rem;
+    text-align: left;
+  }
+
+  .invoice-table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    color: #2c3e50;
+  }
+
+.total-section, .status-section, .terms, .footer {
+  margin-bottom: 1.5rem;
+}
+
+  .total-section h3, .terms h3 {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #34495e;
+    margin-bottom: 0.5rem;
+  }
+
+.total-line {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.status {
+  font-weight: bold;
+  color: #27ae60; /* Green for success, change as needed */
+}
+
+.terms ul {
+  list-style-type: disc;
+  margin-left: 1.5rem;
+}
+
+.footer {
+  text-align: center;
+  font-style: italic;
+  color: #7f8c8d;
+}
+.carousel-item {
+  margin: 0 15px; /* Adjust as needed for horizontal spacing */
+}
+.truck-image {
+  width: 350px;
+  height: 250px;
+  object-fit: cover;
+}
+/* Print-specific Styling */
+@media print {
+  .invoice-container {
+    box-shadow: none;
+    border: none;
+    padding: 0;
+  }
+
+  .invoice-title {
+    font-size: 1.5rem;
+  }
+
+  .invoice-table th, .invoice-table td {
+    padding: 0.5rem;
+  }
+
+  .footer {
+    margin-top: 2rem;
+  }
+}
+
+ 
+
+@media (max-width: 768px) {
+  .card-item, .large-card-item {
+      flex: 1 1 100%;  
+    }
+  }

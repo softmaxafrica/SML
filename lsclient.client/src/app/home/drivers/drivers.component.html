@@ -1,0 +1,601 @@
+
+ 
+ <div class="flex justify-content-end gap-4 mb-3">
+    <p-button label="{{'register_driver' | translate}}" icon="pi pi-upload" [rounded]="true" severity="help" (click)="openDriverDialog()" />
+    <p-button label="{{'manage_columns'| translate}}" [rounded]="true" icon="pi pi-cog" (click)="columnDialogVisible = true" styleClass="m-0" severity="info" />
+    <p-button label="{{'export_to_excel'| translate}}" [rounded]="true" icon="pi pi-download" badgeSeverity="warn" styleClass="m-0" />
+  </div>
+
+ 
+ <div class="mb-3" id="DriverList">
+      
+          <div class="card"> 
+              <p-table
+                  [value]="fiteredDrivers"
+                  [paginator]="true"
+                  [rows]="globalColumnControlService.rows"
+                  [first]="globalColumnControlService.first"
+                  [showCurrentPageReport]="true"
+                  currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                  (onPage)="globalColumnControlService.pageChange($event)"
+                  [rowsPerPageOptions]="[10, 25, 50]"
+              >
+              <ng-template pTemplate="caption">
+                <div class="flex justify-content-end gap-4  ">
+                  <input pInputText type="text" [(ngModel)]="searchTerm"
+                         (input)="onSearch()" placeholder="Search" icon="pi pi-cog"
+                         styleClass="m-0" />
+                </div>
+              </ng-template>
+          
+              <ng-template pTemplate="header">
+                  <tr> 
+                    <th *ngFor="let col of globalColumnControlService.getTargetColumns()" [pSortableColumn]="col.field">
+                      {{ col.header }}
+                      <p-sortIcon [field]="col.field"></p-sortIcon>
+                      <p-columnFilter [field]="col.field" type="text" display="menu"></p-columnFilter>
+                    </th>   
+                       <th>{{ 'actions' | translate }}</th>
+  
+                  </tr>
+                </ng-template>
+  
+                   
+                <ng-template pTemplate="body" let-driver let-columns="targetColumns">
+                  <tr>
+                      <td *ngFor="let col of globalColumnControlService.getTargetColumns()">                    
+                          <ng-container *ngIf="col.field === 'imageUrl'">
+                              <img 
+                                  [src]="baseUrl + driver.imageUrl" 
+                                  style="width: 70px; height: 70px; border-radius: 50%;">
+                          </ng-container>
+              
+                          <ng-container *ngIf="col.field === 'status'">
+                              <p-tag 
+                                  [value]="driver[col.field]" 
+                                  [severity]="functions.getSeverity(driver[col.field])">
+                              </p-tag>
+                          </ng-container>
+              
+                          <ng-container *ngIf="col.field !== 'status' && col.field !== 'imageUrl'">
+                              {{ driver[col.field] }}
+                          </ng-container>
+                      </td>
+                      <td>
+                         <p-button icon="pi pi-pencil" [outlined]="true"  severity="help" (click)="editDriver(driver)" pTooltip="Edit"></p-button>
+  
+                      </td>
+                      
+                  </tr>
+              </ng-template>
+                          <ng-template pTemplate="paginatorleft">
+                      <p-button type="button" icon="pi pi-plus" styleClass="p-button-text" />
+                  </ng-template>
+                  <ng-template pTemplate="paginatorright">
+                      <p-button type="button" icon="pi pi-cloud" styleClass="p-button-text" />
+                  </ng-template>
+              </p-table> 
+          </div>
+  
+          <!-- Column Management Dialog -->
+          <p-dialog 
+              [(visible)]="columnDialogVisible" 
+              [header]="'Manage Columns'" 
+              [modal]="true" 
+              [responsive]="true"
+              [style]="globalColumnControlService.getColumnDialogConfig()">
+              <p-fieldset legend="Columns" [toggleable]="true">
+                  <p-pickList 
+                      [source]="globalColumnControlService.getSourceColumns()" 
+                      [target]="globalColumnControlService.getTargetColumns()" 
+                      sourceHeader="Available Columns"
+                      targetHeader="Selected Columns" 
+                      [dragdrop]="true" 
+                      [responsive]="true"
+                      breakpoint="1400px"
+                      filterBy="header" 
+                      showSourceControls="false"
+                      showTargetControls="false"
+                                      
+                      >
+                      <ng-template let-column pTemplate="item">
+                          <div class="flex flex-wrap p-2 align-items-center gap-3">
+                              <span class="font-bold">
+                                  {{ column.header }}
+                              </span>
+                          </div>
+                      </ng-template>
+                  </p-pickList>
+              </p-fieldset>
+              <p-footer>
+                  <p-button label="Close" icon="pi pi-times" (click)="columnDialogVisible = false"></p-button>
+              </p-footer>
+          </p-dialog>
+  
+          <!-- DRIVER DETAILS DIALOG -->
+          <p-dialog
+          [(visible)]="editDialogVisible"
+          (onHide)="editDialogVisible = false"
+          [maximizable]="true"
+          [header]="'Edit Driver'"
+          [responsive]="true"
+          [style]="{ width: '90vw', height: '100vh' }"
+          [modal]="true"
+        >
+          <ng-template pTemplate="header">
+            <div class="flex align-items-center">
+              <span class="text-xl font-bold">{{ 'driver_details' | translate }}</span>
+
+            </div>
+           
+            <p-tag 
+            [value]="selectedDriver?.status" 
+            [severity]="functions.getSeverity(selectedDriver!.status)">
+        </p-tag>
+
+          </ng-template>
+        
+          <p-tabView>
+            <p-tabPanel [header]="'Driver Security Vetting'" *ngIf="selectedDriver?.status=='PENDING' || selectedDriver?.status=='REJECTED' ">
+              <div class="p-fluid">
+                <div class="grid">
+                  <div class="col-12 md:col-6">
+                    <p-card header="{{ 'driver_security_vetting' | translate }}">
+                      <div class="p-fluid" [formGroup]="driverForm">
+                        <!-- Full Name -->
+                        <div class="field mb-3">
+                          <label for="fullName">{{ 'full_name' | translate }}</label>
+                          <input pInputText id="fullName" formControlName="fullName" [disabled]="true" class="w-full" />
+                        </div>
+            
+                        <!-- License Number -->
+                        <div class="field mb-3">
+                          <label for="licenseNumber">{{ 'license_number' | translate }}</label>
+                          <input pInputText id="licenseNumber" formControlName="licenseNumber" [disabled]="true" class="w-full" />
+                        </div>
+            
+                        <!-- Email -->
+                        <div class="field mb-3">
+                          <label for="email">{{ 'email' | translate }}</label>
+                          <input pInputText id="email" type="email" formControlName="email" [disabled]="true" class="w-full" />
+                        </div>
+            
+                        <!-- Phone -->
+                        <div class="field mb-3">
+                          <label for="phone">{{ 'phone' | translate }}</label>
+                          <input pInputText id="phone" formControlName="phone" [disabled]="true" class="w-full" />
+                        </div>
+                        <div class="field mb-3">
+                          <label for="status">{{ 'status' | translate }}</label>
+                          <p-select
+                          id="status"
+                          formControlName="status"
+                          [options]="statusOptions"
+                          optionLabel="label"
+                          optionValue="value" 
+                          [placeholder]="'Select Status'"
+                          class="w-full">
+                        </p-select>
+                        </div>
+
+                        <div class="field mb-3">
+                          <label for="registrationComment">{{ 'registration_comment' | translate }}</label>
+                          <textarea pInputTextarea id="registrationComment" rows="5" formControlName="registrationComment" class="w-full"></textarea>
+                        </div>
+            
+                        <!-- Company ID (Hidden Field) -->
+                        <input type="hidden" formControlName="companyID" />
+            
+                        <!-- Submit and Cancel Buttons -->
+                        <div class="gap-8 field mb-3 flex justify-content-end">
+                          <button pButton type="button" 
+                                  [label]="'Submit' | translate " 
+                                  icon="pi pi-check" 
+                                  rounded="true"
+                                  severity="info" 
+                                   (click)="onSubmit()">
+                          </button>
+              
+                        </div>
+                      </div>
+                    </p-card>
+                  </div>
+             
+                </div>
+              </div>
+            </p-tabPanel>
+            
+            
+            <p-tabPanel [header]="'Driver Details'">
+              <div class="flex justify-content-end gap-4 mb-3">
+                <p-button label="{{'assign_trucks_to_driver' | translate}}" icon="pi pi-upload"
+                          [rounded]="true" severity="help" (click)="showTruckAssignmentToDriver()"/>
+                        
+                          <p-button label="{{'delete_driver' | translate}}" icon="pi pi-exclamation-triangle"
+                          [rounded]="true" outlined="true" severity="danger" (click)="confirmDelete()"/>
+                                  
+              </div>
+            
+              <div class="p-fluid">
+                <div class="grid">
+                  
+                  <!-- Assigned Truck Types Section -->
+                  <div class="col-12 md:col-12" *ngIf="selectedDriver?.truckTypes?.length">
+                    <p-card header="Assigned Truck Types">
+                      <div class="p-fluid">
+                        <p-table *ngIf="selectedDriver?.truckTypes?.length"
+                                 [value]="selectedDriver?.truckTypes || []"
+                                 dataKey="truckTypeID"
+                                 [tableStyle]="{ 'min-width': '60rem', 'overflow': 'hidden' }"
+                                 [paginator]="true"
+                                 [rows]="3"
+                                 [rowsPerPageOptions]="[5, 10]"
+                                 class="custom-table">
+                          
+                          <ng-template pTemplate="header">
+                            <tr>
+                              <th *ngFor="let col of truckColumns" pSortableColumn="{{ col.field }}">
+                                {{ col.header }}
+                                <p-sortIcon field="{{ col.field }}"></p-sortIcon>
+                              </th>
+                            </tr>
+                          </ng-template>
+                  
+                          <ng-template pTemplate="body" let-truck>
+                            <tr>
+                              <td *ngFor="let col of truckColumns">
+                                <ng-container *ngIf="col.field === 'sampleImageUrl'; else showValue">
+                                  <img 
+                                    [src]="baseUrl + truck.sampleImageUrl" 
+                                    alt="{{ truck.typeName }}"
+                                    class="truck-image"
+                                    style="width: 100px; height: 100px; border-radius: 50%;">
+                                </ng-container>
+                                <ng-template #showValue>
+                                  {{ truck[col.field] }}
+                                </ng-template>
+                              </td>
+                            </tr>
+                          </ng-template>
+                  
+                          <ng-template pTemplate="emptymessage">
+                            <tr>
+                              <td [attr.colspan]="truckColumns.length" class="text-center">
+                                No Trucks Assigned.
+                              </td>
+                            </tr>
+                          </ng-template>
+                        </p-table>
+                      </div>
+                    </p-card>
+                  </div>
+            
+                  <!-- Assign Truck Dialog -->
+                  <div class="col-12 md:col-12" *ngIf="assignTruckDialogVisible">
+                    <p-card header="{{ 'assign_trucks_to_driver' | translate }}">
+                      <div class="dialog-body">
+                        <p-card>
+                          <ng-container>
+                            <h2 class="dialog-title">Assign Truck Types</h2>
+                            <p class="dialog-subtitle">
+                              Assign one or more truck types to
+                              <strong>{{ selectedDriverForAssignment?.fullName }}</strong>.
+                            </p>
+                          </ng-container>
+                
+                          <form [formGroup]="assignTruckForm" class="form-container">
+                            <div class="p-fluid">
+                              <div class="field mb-3">
+                                <label for="truckTypes" class="form-label">Truck Types</label>
+                                <p-multiSelect id="truckTypes"
+                                               [options]="availableTruckTypes"
+                                               formControlName="truckTypes"
+                                               optionLabel="typeName"
+                                               placeholder="Select Truck Types"
+                                               class="w-full"
+                                               [filter]="true">
+                                  <ng-template let-item pTemplate="item">
+                                    <div class="truck-type-option">
+                                      <img [src]="baseUrl + item.imageUrl"
+                                           alt="{{ item.typeName }}"
+                                           class="truck-type-image"/>
+                                      <span>{{ item.typeName }}</span>
+                                    </div>
+                                  </ng-template>
+                                </p-multiSelect>
+                              </div>
+                            </div>
+                          </form>
+                
+                          <p-footer class="dialog-footer">
+                            <p-button label="Assign" class="assign-btn" (click)="assignTruckTypes()"></p-button>
+                            <p-button label="Cancel" rounded="true" severity="contrast" assignTruckDialogVisible = "false"></p-button>
+                          </p-footer>
+                        </p-card>
+                      </div>
+                    </p-card>
+                  </div>
+            
+                </div>
+              </div>
+
+              <div class="p-fluid">
+                <div class="grid">
+                  <div class="col-12 md:col-6">
+                    <p-card header="{{ 'driver_details' | translate }}">
+                      <div class="p-fluid" [formGroup]="driverForm">
+                        <div class="field mb-3">
+                          <label for="companyID">{{ 'company_id' | translate }}</label>
+                          <input pInputText id="companyID" formControlName="companyID" [disabled]="true" class="w-full" />
+                        </div>
+        
+                        <div class="field mb-3">
+                          <label for="fullName">{{ 'full_name' | translate }}</label>
+                          <input pInputText id="fullName" formControlName="fullName" class="w-full" />
+                        </div>
+        
+                        <div class="field mb-3">
+                          <label for="email">{{ 'email' | translate }}</label>
+                          <input pInputText id="email" type="email" formControlName="email" class="w-full" />
+                        </div>
+        
+                        <div class="field mb-3">
+                          <label for="phone">{{ 'phone' | translate }}</label>
+                          <input pInputText id="phone" formControlName="phone" class="w-full" />
+                        </div>
+        
+                        <div class="field mb-3 flex align-items-center" *ngIf="selectedDriver?.status !== 'REJECTED'">
+                          <label class="mr-2">{{ 'is_available_for_booking' | translate }}</label>
+                          <p-toggleSwitch formControlName="isAvilableForBooking"></p-toggleSwitch>
+                        </div>
+                      </div>
+                    </p-card>
+                  </div>
+        
+                  <div class="col-12 md:col-6">
+                    <p-card header="{{ 'additional_details' | translate }}">
+                      <div class="p-fluid" [formGroup]="driverForm">
+                        <div class="field mb-3">
+                          <label for="status">{{ 'status' | translate }}</label>
+                           <span class="font-bold">
+                            <p-tag 
+                            [value]="selectedDriver?.status" 
+                            [severity]="functions.getSeverity(selectedDriver?.status!)">
+                        </p-tag>
+                        </span>
+                        </div>
+        
+                        <div class="field mb-3">
+                          <label for="licenseExpireDate">{{ 'license_expire_date' | translate }}</label>
+                          <p-datepicker formControlName="licenseExpireDate" class="w-full"></p-datepicker>
+                        </div>
+        
+                        <div class="field mb-3">
+                          <label for="licenseNumber">{{ 'license_number' | translate }}</label>
+                          <input pInputText id="licenseNumber" formControlName="licenseNumber" class="w-full" />
+                        </div>
+        
+                        <div class="field mb-3">
+                          <label for="licenseClasses">{{ 'license_classes' | translate }}</label>
+                          <input pInputText id="licenseClasses" formControlName="licenseClasses" class="w-full" />
+                        </div>
+                      </div>
+                    </p-card>
+                  </div>
+                </div>
+              </div>
+            </p-tabPanel>
+        
+            
+            <!-- Tab 3: Placeholder (Add More Content) -->
+            <p-tabPanel [header]="'Additional Settings'">
+              <div class="p-3">
+                <p>Additional settings and configurations for the driver can go here.</p>
+              </div>
+            </p-tabPanel>
+          </p-tabView>
+        
+          <ng-template pTemplate="footer">
+            <div class="flex justify-content-end gap-4">
+              <p-button
+                *ngIf="selectedDriver?.status === 'REJECTED'"
+                label="{{ 'resend_registration' | translate }}"
+                icon="pi pi-refresh"
+                (click)="ResendDriverRegistration()"
+                 severity="secondary"
+              ></p-button>
+              <p-button
+                label="{{ 'save' | translate }}"
+                icon="pi pi-check"
+                rounded="true"
+                (click)="saveDriver()"
+                severity="info"
+                ></p-button>
+              <p-button
+                label="{{ 'cancel' | translate }}"
+                icon="pi pi-times"
+                rounded="true"
+                (click)="editDialogVisible = false"
+                severity="contrast"
+              ></p-button>
+            </div>
+          </ng-template>
+        </p-dialog>
+        
+          <!-- Confirm Delete Dialog -->
+          <p-dialog 
+              [(visible)]="deleteDialogVisible" 
+              [header]="'Confirm Delete'" 
+              [modal]="true" 
+              [style]="{ width: '30vw' }">
+              
+              <p>Are you sure you want to delete this driver?</p>
+              
+              <div class="flex justify-content-end gap-4">
+
+                  <p-button label="Yes" icon="pi pi-check" (click)="deleteDriver()" rounded="true" severity="danger"></p-button>
+                  <p-button label="No" icon="pi pi-times" (click)="deleteDialogVisible = false" rounded="true" severity="contrast"></p-button>
+              </div>
+                </p-dialog>
+  
+           <p-dialog
+          [(visible)]="assignTruckDialogVisible"
+          [header]="'Assign Truck Types'"
+          [modal]="true"
+          [closable]="true"
+          [dismissableMask]="true"
+          [style]="{ height: '70vh', width: '50vw' }"
+          [breakpoints]="{ '960px': '60vw', '640px': '85vw' }"
+          [baseZIndex]="10000"
+          [styleClass]="'assign-truck-dialog'"
+        >
+          <div class="dialog-body">
+            <p-card>
+              <ng-container>
+                <h2 class="dialog-title">Assign Truck Types</h2>
+                <p class="dialog-subtitle">
+                  Assign one or more truck types to
+                  <strong>{{ selectedDriverForAssignment?.fullName }}</strong>.
+                </p>
+              </ng-container>
+        
+              <form [formGroup]="assignTruckForm" class="form-container">
+                <div class="form-group">
+                  <div class="p-fluid">
+                    <div class="grid">
+                      <!-- Left Column -->
+                      <div class="col-12 md:col-12">
+                           <div class="field mb-3">
+                
+                  <label for="truckTypes" class="form-label">Truck Types</label>
+                  <p-multiSelect
+                    id="truckTypes"
+                    [options]="availableTruckTypes"
+                    formControlName="truckTypes"
+                    optionLabel="label"
+                    placeholder="Select Truck Types"
+                    class="w-full"
+                    [filter]="true"
+                  >
+                    <!-- Option Template to display image and label -->
+                    <ng-template let-item pTemplate="item">
+                      <div class="truck-type-option">
+                        <img
+                          [src]="baseUrl + item.imageUrl"
+                          alt="{{ item.label }}"
+                          class="truck-type-image"
+                        />
+                        <span>{{ item.label }}</span>
+                      </div>
+                    </ng-template>
+                  </p-multiSelect>
+                  </div>
+                  </div>
+                  </div>
+                  </div>
+                </div>
+              </form>
+              <p-footer class="dialog-footer">
+                <div class="flex justify-content-end gap-4">
+                <p-button label="Submit" severity="info" rounded="true" (click)="assignTruckTypes()"></p-button>
+                
+                <p-button
+                rounded="true"
+                  label="Cancel"
+                  severity="contrast"
+                  class="cancel-btn p-button-outlined"
+                  (click)="assignTruckDialogVisible = false"
+                ></p-button>
+                </div>
+              </p-footer>
+            </p-card>
+          </div>
+        
+         
+        </p-dialog>
+        
+
+        <!-- NEW DRIVER REGISTER -->
+        <p-dialog
+        [(visible)]="ShowNewDriverDialog"
+        [modal]="true"
+         [responsive]="true"
+        [style]="{ width: '70vw', height: '100vh' }"
+         header="Register New Driver"
+        (onHide)="displayDialog = false"
+      >
+        
+ 
+      <div class="p-fluid">
+        <div class="grid">
+            <!-- Left Column -->
+            <div class="col-12 md:col-6">
+                <div class="field mb-3">
+                    <label for="fullName">Full Name</label>
+                    <input pInputText id="fullName" type="text" [(ngModel)]="driverPayload.fullName" class="w-full" placeholder="Enter Full Name" />
+                </div>
+    
+                <div class="field mb-3">
+                    <label for="licenseNumber">License Number</label>
+                    <input pInputText id="licenseNumber" type="text" [(ngModel)]="driverPayload.licenseNumber" class="w-full" placeholder="Enter License Number" />
+                </div>
+    
+                <div class="field mb-3">
+                    <label for="email">Email</label>
+                    <input pInputText id="email" type="email" [(ngModel)]="driverPayload.email" class="w-full" placeholder="Enter Email" />
+                </div>
+    
+                <div class="field mb-3">
+                    <label for="phone">Phone</label>
+                    <input pInputText id="phone" type="text" [(ngModel)]="driverPayload.phone" class="w-full" placeholder="Enter Phone Number" />
+                </div>
+            </div>
+    
+            <!-- Right Column -->
+            <div class="col-12 md:col-6">
+                <div class="field mb-3">
+                    <label for="licenseClasses">License Classes</label>
+                    <input pInputText id="licenseClasses" type="text" [(ngModel)]="driverPayload.licenseClasses" class="w-full" placeholder="Enter License Classes" />
+                </div>
+    
+                <div class="field mb-3">
+                    <label for="licenseExpireDate">License Expiry Date</label>
+                    <p-datepicker [(ngModel)]="driverPayload.licenseExpireDate" class="w-full" placeholder="Select Expiry Date"></p-datepicker>
+                </div>
+    
+                <!-- <div class="field mb-3">
+                    <label for="registrationComment">Registration Comment</label>
+                    <textarea pInputTextarea id="registrationComment" [(ngModel)]="driverPayload.registrationComment" class="w-full" placeholder="Enter Comment"></textarea>
+                </div> -->
+    
+                <div class="field mb-3 flex align-items-center">
+                    <label for="isAvailableForBooking" class="mr-2">Available for Booking</label>
+                    <p-checkbox [(ngModel)]="driverPayload.isAvilableForBooking" binary="true"></p-checkbox>
+                </div>
+    
+                <div class="field mb-3">
+                    <label for="profilePicture">Profile Picture</label>
+                    <p-fileUpload name="imageFile" accept="image/*" chooseLabel="Upload Profile Picture" (onSelect)="onImageSelected($event)" customUpload="true"></p-fileUpload>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Dialog Footer -->
+        <div class="flex justify-content-end gap-3 custom-footer">
+            <p-button label="Register" icon="pi pi-user-plus" (click)="onRegister()" severity="success" rounded="true"></p-button>
+        </div>
+    </div>
+    
+    <style>
+        p-datepicker {
+            width: 100% !important;
+            display: block;
+        }
+    
+        p-datepicker .p-inputtext {
+            width: 100% !important;
+        }
+    </style>
+    </p-dialog>
+   </div>
+  

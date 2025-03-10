@@ -1,0 +1,84 @@
+<div class="flex align-items-center justify-content-center min-h-screen p-4">
+  <div class="w-full lg:w-10">
+    <div class="grid">
+      <!-- Left Column -->
+      <div class="col-12 md:col-6">
+        <p-card header="{{ 'company_registration' | translate }}" class="p-shadow-10">
+          <div class="p-fluid">
+            <!-- Company TIN Number -->
+            <div class="field mb-4">
+              <label for="companyTinNumber" class="block font-medium mb-2">{{ 'company_tin_number' | translate }}</label>
+              <input pInputText id="companyTinNumber" type="text" [(ngModel)]="companyPayload.companyTinNumber" class="w-full" />
+            </div>
+
+            <!-- Company Name -->
+            <div class="field mb-4">
+              <label for="companyName" class="block font-medium mb-2">{{ 'company_name' | translate }}</label>
+              <input pInputText id="companyName" type="text" [(ngModel)]="companyPayload.companyName" class="w-full" required />
+              <small *ngIf="!companyPayload.companyName" class="p-error">Company Name is required.</small>
+            </div>
+
+            <!-- Admin Full Name -->
+            <div class="field mb-4">
+              <label for="adminFullName" class="block font-medium mb-2">{{ 'admin_full_name' | translate }}</label>
+              <input pInputText id="adminFullName" type="text" [(ngModel)]="companyPayload.adminFullName" class="w-full" required />
+              <small *ngIf="!companyPayload.adminFullName" class="p-error">Admin Full Name is required.</small>
+            </div>
+
+            <!-- Admin Email -->
+            <div class="field mb-4">
+              <label for="adminEmail" class="block font-medium mb-2">{{ 'admin_email' | translate }}</label>
+              <input pInputText id="adminEmail" type="email" [(ngModel)]="companyPayload.adminEmail" class="w-full" required />
+              <small *ngIf="!companyPayload.adminEmail" class="p-error">Valid email is required.</small>
+            </div>
+
+            <!-- Admin Contact -->
+            <div class="field mb-4">
+              <label for="adminContact" class="block font-medium mb-2">{{ 'admin_contact' | translate }}</label>
+              <input pInputText id="adminContact" type="text" [(ngModel)]="companyPayload.adminContact" class="w-full" required />
+              <small *ngIf="!companyPayload.adminContact" class="p-error">Admin Contact is required.</small>
+            </div>
+          </div>
+        </p-card>
+      </div>
+
+      <!-- Right Column -->
+      <div class="col-12 md:col-6">
+        <p-card header="{{ 'other_details' | translate }}" class="p-shadow-10">
+          <div class="p-fluid">
+            <!-- Company Address -->
+            <div class="field mb-4">
+              <label for="companyAddress" class="block font-medium mb-2">{{ 'company_address' | translate }}</label>
+              <input pInputText id="companyAddress" type="text" [(ngModel)]="companyPayload.companyAddress" class="w-full" required />
+              <small *ngIf="!companyPayload.companyAddress" class="p-error">Company Address is required.</small>
+            </div>
+
+            <!-- Company Description -->
+            <div class="field mb-4">
+              <label for="companyDescription" class="block font-medium mb-2">{{ 'company_description' | translate }}</label>
+              <textarea pInputTextarea id="companyDescription" rows="5" [(ngModel)]="companyPayload.companyDescription" class="w-full"></textarea>
+            </div>
+
+            <!-- Company Latitude -->
+            <div class="field mb-4">
+              <label for="companyLatitude" class="block font-medium mb-2">{{ 'company_latitude' | translate }}</label>
+              <input pInputText id="companyLatitude" type="number" [(ngModel)]="companyPayload.companyLatitude" class="w-full" />
+            </div>
+
+            <!-- Company Longitude -->
+            <div class="field mb-4">
+              <label for="companyLongitude" class="block font-medium mb-2">{{ 'company_longitude' | translate }}</label>
+              <input pInputText id="companyLongitude" type="number" [(ngModel)]="companyPayload.companyLongitude" class="w-full" />
+            </div>
+          </div>
+        </p-card>
+
+        <!-- Register Button -->
+        <div class="flex justify-content-end mt-4 gap-3">
+          <button pButton type="button" label="{{ 'back_to_login' | translate }}" icon="pi pi-arrow-left" severity="secondary" routerLink="/account/login"></button>
+          <button pButton type="button" label="{{ 'register' | translate }}" icon="pi pi-check" severity="primary" (click)="onRegister()"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

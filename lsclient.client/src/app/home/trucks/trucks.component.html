@@ -1,0 +1,411 @@
+ 
+      <!-- <p-dock [model]="truckmenu" position="top">
+        <ng-template pTemplate="item" let-item>
+            <img [src]="item.icon" [alt]="item.label" width="50%">
+            <label>{{item.label}}</label>
+    
+        </ng-template>
+    </p-dock> -->
+    <div class="flex justify-content-end gap-4 mb-3">
+         <p-button label="{{'add_truck'| translate}}" [rounded]="true" icon="pi pi-upload" (onClick)="editTruck()"   severity="info"/>
+      
+      </div>
+      
+      <div class="p-inputgroup">
+        <span class="p-inputgroup-addon">
+            <i class="pi pi-search"></i>
+        </span>
+        <input type="text" pInputText [(ngModel)]="searchQuery" (input)="filterTrucks()" placeholder="Search trucks..." />
+    </div>
+    
+    <p-carousel 
+        [numVisible]="2" 
+        [numScroll]="1" 
+        [circular]="true" 
+        [autoplayInterval]="10000" 
+        [value]="filteredTrucks" 
+        [responsiveOptions]="responsiveOptions"
+    >
+<ng-template let-trucks pTemplate="item">
+  <div class="carousel-item border-0 surface-border border-round p-3 ">
+                     <div class="field mb-0">
+            <div class="relative mx-auto">
+                <p-card class="carousel-card">
+                    <div class="border-0 surface-border border-round p-3">
+                        <div class="font-large mb-2">{{ trucks.truckType.typeName }}</div>
+                        <div class="font-medium mb-3">{{ trucks.model }}</div>
+
+                        <div class="mb-3 text-center">
+                            <img 
+
+                                [src]="baseUrl + trucks.truckType.sampleImageUrl" 
+                                [alt]="'truck_type_image_alt' | translate" 
+                                class="truck-image border-round" 
+                            />
+                        </div>
+
+                        <p-chip 
+                            [label]="trucks.isTruckAvilableForBooking ? ('currently_available_for_booking' | translate) : ('currently_not_available' | translate)"
+                            [styleClass]="trucks.isTruckAvilableForBooking ? 'p-chip-success' : 'p-chip-danger'">
+                        </p-chip>
+
+                        <div class="mt-3 flex justify-content-left">
+                            <p-toggleSwitch [(ngModel)]="trucks.isActive" (onChange)="updateTruckDetails(trucks, trucks.isActive)"></p-toggleSwitch>
+                            <label style="margin-left: 10px;">{{ trucks.isActive ? ('active' | translate) : ('inactive' | translate) }}</label>
+                          </div>
+                          
+                          
+                        <div class="font-medium mb-3">{{ trucks.brand }} </div>
+                        <div class="font-medium mb-3">{{ trucks.chasisNo }}</div>
+                        <div class="font-medium mb-3">{{ trucks.category }}</div>
+                        <div class="font-medium mb-3">{{ trucks.engineCapacity }}</div>
+                        <div class="font-medium mb-3">{{ trucks.cabinType }}</div>
+                        <div class="font-medium mb-3">{{ trucks.drive }}</div>
+                        <div class="font-medium mb-3">{{ trucks.model }}</div>
+
+
+                        <div class="mb-3 font-medium text-center">{{ trucks.truckNumber }}</div>
+                        <div class="flex justify-content-between align-items-center mb-3">
+                            <div class="text-sm text-justify">{{ trucks.truckType.description }}</div>
+                        </div>
+
+                        <!-- Action buttons for Edit and Delete -->
+                        <div class="flex justify-content-between mt-3">
+                            <p-button   
+                             icon="pi pi-pencil" 
+                             label="Edit"
+                             [raised]="true" 
+                            severity="info"
+                            [rounded]="true" 
+                             (click)="onEditTruck(trucks)">
+                          
+                          </p-button>
+                            <p-button  
+                             icon="pi pi-trash"
+                              label="Delete"  
+                              [raised]="true" 
+                              severity="danger"
+                              [rounded]="true" 
+                              
+                              (click)="onDeleteTruck(trucks.truckID)">
+                              
+                              </p-button>
+                        </div>
+                    </div>
+                </p-card>
+            </div>
+        </div>
+    </div>
+</ng-template>
+</p-carousel>
+
+       
+    <!-- Truck Information Section -->
+ 
+      <div class="row flex justify-content-center card-container" style="gap: 35px; margin: 50px;">
+        <p-card header="{{'truck_information' | translate}}" subheader="{{'job_requests' | translate}}" class="large-card-item"></p-card>
+        <p-card header="{{'truck_information' | translate}}" subheader="{{'job_requests' | translate}}" class="large-card-item"></p-card>
+      </div>
+    
+
+      <p-dialog 
+      [(visible)]="newTruckVisibility" 
+      (onHide)="newTruckVisibility = false"
+      [maximizable]="true"
+      header="{{ 'new_truck_registration' | translate }}"
+      [responsive]="true"
+      [style]="{ width: '70vw', height: '100vh' }"
+      [modal]="true">
+    
+      <!-- Dialog Header -->
+      <ng-template pTemplate="header">
+        <div class="flex align-items-center">
+          <span class="text-xl font-bold">{{ 'new_truck_registration' | translate }}</span>
+        </div>
+      </ng-template>
+    
+      <!-- Dialog Content -->
+      <div class="p-fluid">
+        <div class="grid">
+          <!-- Left Column: Truck Details Form -->
+          <div class="col-12 md:col-6">
+            <p-card header="{{ 'truck_details' | translate }}">
+              <div class="p-fluid">
+                <!-- Truck Number -->
+                <div class="field mb-0">
+                  <label for="truckNumber">{{ 'truck_number' | translate }}</label>
+                </div>
+                <div class="field mb-3">
+                  <input pInputText id="truckNumber" type="text" [(ngModel)]="truckPayload.truckNumber" class="w-full" />
+                </div>
+    
+                <!-- Model -->
+                <div class="field mb-0">
+                  <label for="model">{{ 'model' | translate }}</label>
+                </div>
+                <div class="field mb-3">
+                  <input pInputText id="model" type="text" [(ngModel)]="truckPayload.model" class="w-full" />
+                </div>
+    
+                <!-- Truck Type -->
+                <div class="field mb-0">
+                  <label for="truckType">{{ 'truck_type' | translate }}</label>
+                </div>
+                <div class="field mb-3">
+                  <p-select 
+                    id="truckType"
+                    [options]="truckTypes" 
+                    [(ngModel)]="selectedTruckType" 
+                    optionLabel="typeName" 
+                    (onChange)="onTruckTypeChange($event)"
+                    class="w-full">
+                  </p-select>
+                </div>
+    
+                <!-- Chassis Number -->
+                <div class="field mb-0">
+                  <label for="chasisNo">{{ 'chasis_number' | translate }}</label>
+                </div>
+                <div class="field mb-3">
+                  <input pInputText id="chasisNo" type="text" [(ngModel)]="truckPayload.chasisNo" class="w-full" />
+                </div>
+    
+                <!-- Brand -->
+                <div class="field mb-0">
+                  <label for="brand">{{ 'brand' | translate }}</label>
+                </div>
+                <div class="field mb-3">
+                  <input pInputText id="brand" type="text" [(ngModel)]="truckPayload.brand" class="w-full" />
+                </div>
+    
+                <!-- Engine Capacity -->
+                <div class="field mb-0">
+                  <label for="engineCapacity">{{ 'engine_capacity' | translate }}</label>
+                </div>
+                <div class="field mb-3">
+                  <input pInputText id="engineCapacity" type="text" [(ngModel)]="truckPayload.engineCapacity" class="w-full" />
+                </div>
+    
+                <!-- Truck State (Active/Inactive) -->
+                <div class="field mb-3 flex align-items-center">
+                  <label class="mr-2">{{ 'truck_state' | translate }}</label>
+                  <p-toggleSwitch [(ngModel)]="truckPayload.isActive"></p-toggleSwitch>
+                </div>
+    
+                <!-- Availability for Booking -->
+                <div class="field mb-3 flex align-items-center">
+                  <label class="mr-2">{{ 'is_available_for_booking' | translate }}</label>
+                  <p-toggleSwitch [(ngModel)]="truckPayload.isTruckAvilableForBooking"></p-toggleSwitch>
+                </div>
+              </div>
+            </p-card>
+          </div>
+    
+          <!-- Right Column: Additional Truck Details -->
+          <div class="col-12 md:col-6">
+            <p-card header="{{ 'additional_details' | translate }}">
+              <div class="p-fluid">
+                <!-- Truck Type Details -->
+                <div *ngIf="selectedTruckType" class="truck-type-container">
+                  <h2>{{ selectedTruckType.typeName }}</h2>
+                  <img 
+                    [src]="'assets/images/trucksamples/' + selectedTruckType.sampleImageUrl" 
+                    [alt]="'truck_type_image_alt' | translate" 
+                    class="truck-image border-round mb-3" />
+    
+                  <!-- Description -->
+                  <div class="field mb-3">
+                    <textarea 
+                      rows="5"
+                      cols="30" 
+                      pInputTextarea
+                      [(ngModel)]="selectedTruckType.description"  
+                      disabled="true"
+                      style="resize: none; overflow: hidden;"
+                      class="w-full">
+                    </textarea>
+                  </div>
+                </div>
+    
+                <!-- Cabin Type -->
+                <div class="field mb-0">
+                  <label for="cabinType">{{ 'cabin_type' | translate }}</label>
+                </div>
+                <div class="field mb-3">
+                  <p-select
+                    id="cabinType"
+                    [(ngModel)]="truckPayload.cabinType"
+                    [options]="cabinType"
+                    placeholder="Select Cabin Type"
+                    (onChange)="onCabinTypeChange($event)"
+                    class="w-full">
+                  </p-select>
+                </div>
+    
+                <!-- Category -->
+                <div class="field mb-0">
+                  <label for="category">{{ 'category' | translate }}</label>
+                </div>
+                <div class="field mb-3">
+                  <p-select
+                    id="category"
+                    [(ngModel)]="truckPayload.category"
+                    [options]="category"
+                    placeholder="Select Category"
+                    (onChange)="onCategoryChange($event)"
+                    class="w-full">
+                  </p-select>
+                </div>
+    
+                <!-- Fuel Type -->
+                <div class="field mb-0">
+                  <label for="fuelType">{{ 'fuel_type' | translate }}</label>
+                </div>
+                <div class="field mb-3">
+                  <p-select
+                    id="fuelType"
+                    [(ngModel)]="truckPayload.fuelType"
+                    [options]="fuelType"
+                    placeholder="Select Fuel Type"
+                    (onChange)="onFuelTypeChange($event)"
+                    class="w-full">
+                  </p-select>
+                </div>
+    
+                <!-- Drive Type -->
+                <div class="field mb-0">
+                  <label for="drive">{{ 'drive_type' | translate }}</label>
+                </div>
+                <div class="field mb-3">
+                  <p-select
+                    id="drive"
+                    [(ngModel)]="truckPayload.drive"
+                    [options]="drive"
+                    placeholder="Select Drive Type"
+                    (onChange)="onDriveChange($event)"
+                    class="w-full">
+                  </p-select>
+                </div>
+              </div>
+            </p-card>
+          </div>
+        </div>
+      </div>
+    
+      <!-- Footer with Add Truck Button -->
+      <ng-template pTemplate="footer">
+        <div class="flex justify-content-end gap-2">
+          <p-button 
+            label="{{ 'add_truck' | translate }}"
+            icon="pi pi-plus"
+            class="p-button-primary"
+            (click)="onAddTruck()"
+            [disabled]="!isFormValid()">
+          </p-button>
+        </div>
+      </ng-template>
+    </p-dialog>
+
+    <!-- Edit Truck -->
+<p-dialog  [(visible)]="editTruckDialog"
+(onHide)="editTruckDialog = false"
+[maximizable]="true"
+header="{{ 'edit_truck_details' | translate }}"
+[responsive]="true"
+[style]="{ width: '70vw', height: '100vh' }"
+[modal]="true">
+<!-- Dialog Header -->
+<ng-template pTemplate="header">
+<div class="flex align-items-center">
+<span class="text-xl font-bold">{{ 'edit_truck_details' | translate }}</span>
+</div>
+</ng-template>
+
+<!-- Dialog Content -->
+<div class="p-fluid">
+<div class="grid">
+<!-- Left Column: Truck Details Form -->
+<div class="col-12 md:col-6">
+<p-card header="{{ 'truck_details' | translate }}">
+<div class="p-fluid">
+  <div class="field mb-0">
+    <label for="truckNumber">{{ 'truck_number' | translate }}</label>
+  </div>
+  <div class="field mb-3">
+    <input pInputText id="truckNumber" type="text" [(ngModel)]="truckPayload.truckNumber" disabled class="w-full" />
+  </div>
+
+  <div class="field mb-0">
+    <label for="model">{{ 'model' | translate }}</label>
+  </div>
+  <div class="field mb-3">
+    <input pInputText id="model" type="text" [(ngModel)]="truckPayload.model" class="w-full" />
+  </div>
+
+  <div class="field mb-0">
+    <label for="truckType">{{ 'truck_type' | translate }}</label>
+  </div>
+  <div class="field mb-3">
+    <input pInputText id="truckType" type="text" [(ngModel)]="truckPayload.truckTypeID" disabled class="w-full" />
+  </div>
+
+  <div class="field mb-3 flex align-items-center">
+    <label class="mr-2">{{ 'truck_state' | translate }}</label>
+    <p-toggleSwitch [(ngModel)]="truckPayload.isActive"></p-toggleSwitch>
+  </div>
+
+  <div class="field mb-3 flex align-items-center">
+    <label class="mr-2">{{ 'is_available_for_booking' | translate }}</label>
+    <p-toggleSwitch [(ngModel)]="truckPayload.isTruckAvilableForBooking"></p-toggleSwitch>
+  </div>
+</div>
+</p-card>
+</div>
+
+<!-- Right Column: Additional Truck Details -->
+<div class="col-12 md:col-6">
+<p-card header="{{ 'additional_details' | translate }}">
+<div class="p-fluid">
+  <div class="field mb-0">
+    <label for="cabinType">{{ 'cabin_type' | translate }}</label>
+  </div>
+  <div class="field mb-3">
+    <p-select id="cabinType" [(ngModel)]="truckPayload.cabinType" [options]="cabinType" placeholder="Select Cabin Type" (onChange)="onCabinTypeChange($event)" class="w-full"></p-select>
+  </div>
+  
+  <div class="field mb-0">
+    <label for="category">{{ 'category' | translate }}</label>
+  </div>
+  <div class="field mb-3">
+    <p-select id="category" [(ngModel)]="truckPayload.category" [options]="category" placeholder="Select Category" (onChange)="onCategoryChange($event)" class="w-full"></p-select>
+  </div>
+  
+  <div class="field mb-0">
+    <label for="fuelType">{{ 'fuel_type' | translate }}</label>
+  </div>
+  <div class="field mb-3">
+    <p-select id="fuelType" [(ngModel)]="truckPayload.fuelType" [options]="fuelType" placeholder="Select Fuel Type" (onChange)="onFuelTypeChange($event)" class="w-full"></p-select>
+  </div>
+  
+  <div class="field mb-0">
+    <label for="drive">{{ 'drive_type' | translate }}</label>
+  </div>
+  <div class="field mb-3">
+    <p-select id="drive" [(ngModel)]="truckPayload.drive" [options]="drive" placeholder="Select Drive Type" (onChange)="onDriveChange($event)" class="w-full"></p-select>
+  </div>
+</div>
+</p-card>
+</div>
+</div>
+</div>
+
+<!-- Footer with Save Button -->
+<ng-template pTemplate="footer">
+<div class="flex justify-content-end gap-2">
+<p-button label="{{ 'save_changes' | translate }}"
+      icon="pi pi-save"
+      class="p-button-primary"
+      (click)="updateFullTruckDetails(truckPayload, selectedDriver?.driverID)"></p-button>
+</div>
+</ng-template>
+</p-dialog>

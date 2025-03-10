@@ -1,0 +1,9 @@
+p-datepicker {
+    width: 100% !important;
+    display: block;
+  }
+  
+  p-datepicker .p-inputtext {
+    width: 100% !important;
+  }
+  

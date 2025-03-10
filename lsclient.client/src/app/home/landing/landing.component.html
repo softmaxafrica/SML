@@ -1,0 +1,51 @@
+<div *ngIf="showWelcomeContent" class="welcome-container">
+    <div class="card flex justify-content-center" id="backlayout">
+      <p-card header="LogiSync" subheader="We are the logistics experts" [style]="{ width: '100%' }">
+        <ng-template pTemplate="header">
+          <div class="p-d-flex p-jc-center p-ai-center">
+            <h1 class="logo-title">LogiSync</h1>
+          </div>
+        </ng-template>
+  
+        <div class="card-content">
+          <h2 class="welcome-title">Welcome to LogiSync</h2>
+          <p class="welcome-text">
+            Your trusted platform for managing logistics, monitoring trucks, handling job requests, invoicing, billing, and more.
+          </p>
+  
+          <div class="info-sections">
+            <div class="info-section">
+              <h3>For Companies:</h3>
+              <ul>
+                <li>Monitor your trucks and drivers</li>
+                <li>Receive job requests from customers</li>
+                <li>Manage invoicing and billing processes</li>
+                <li>Live tracking of cargo location and truck status</li>
+              </ul>
+            </div>
+            <div class="info-section">
+              <h3>For Customers:</h3>
+              <ul>
+                <li>Transparency and security for your cargo</li>
+                <li>Live monitoring of cargo location and truck status</li>
+                <li>Create job requests with ease</li>
+                <li>Price negotiation and seamless billing and payments</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+  
+        <ng-template pTemplate="footer">
+          <div class="p-d-flex p-jc-between p-ai-center mt-3">
+            <p-button label="Read More" styleClass="p-button-text" icon="pi pi-info-circle"></p-button>
+            <p-button label="Get Started" icon="pi pi-sign-in"  
+                       routerLink="/account/login"
+            class="p-button-success"></p-button>
+          </div>
+        </ng-template>
+      </p-card>
+    </div>
+  
+    <router-outlet></router-outlet>
+  </div>
+  

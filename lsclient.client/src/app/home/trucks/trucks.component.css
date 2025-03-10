@@ -1,0 +1,8 @@
+.carousel-item {
+    margin: 0 15px; /* Adjust as needed for horizontal spacing */
+  }
+  .truck-image {
+    width: 350px;
+    height: 250px;
+    object-fit: cover;
+  }
