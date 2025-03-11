@@ -62,6 +62,7 @@ namespace lsclient.Server.Controllers
                 {
                     var invoice = db.Invoices
                         .Include(c=> c.CustomerDetails)
+                        .Include(c => c.CompanyDetails)
                         .Where(i => i.CompanyID == CompanyId).ToList();
                     if (invoice == null)
                     {
@@ -79,6 +80,38 @@ namespace lsclient.Server.Controllers
         }
         #endregion
 
+
+        #region GetCustomerInvoice
+        [HttpGet]
+        [Route("GetCustomerInvoice/{CustomerId}")]
+        public IActionResult GetCustomerInvoice(string CustomerId)
+        {
+            var executionResult = new ExecutionResult();
+            string functionName = nameof(GetInvoiceById);
+
+            try
+            {
+                using (var db = new AppDbContext(_config))
+                {
+                    var invoice = db.Invoices
+                        .Include(c => c.CustomerDetails)
+                        .Include(i=>i.CompanyDetails)
+                        .Where(i => i.CustomerID == CustomerId).ToList();
+                    if (invoice == null)
+                    {
+                        return NotFound("No Invoice Avilable");
+                    }
+                    executionResult.SetData(invoice);
+                    return Ok(executionResult.GetServerResponse());
+                }
+            }
+            catch (Exception ex)
+            {
+                executionResult.SetInternalServerError(nameof(InvoiceController), functionName, ex);
+                return StatusCode(executionResult.GetStatusCode(), executionResult.GetServerResponse().Message);
+            }
+        }
+        #endregion
         #region GetCompanyInvoiceDetails
         [HttpGet]
         [Route("GetCompanyInvoiceDetails/{CompanyId}/{InvoiceNumber}")]
@@ -94,6 +127,38 @@ namespace lsclient.Server.Controllers
                     var invoice = db.Invoices
                                      .Include(c => c.CustomerDetails)
                                      .Where(i => i.CompanyID == CompanyId && i.InvoiceNumber==InvoiceNumber).FirstOrDefault();
+                    if (invoice == null)
+                    {
+                        return NotFound("No Invoice Avilable");
+                    }
+                    executionResult.SetData(invoice);
+                    return Ok(executionResult.GetServerResponse());
+                }
+            }
+            catch (Exception ex)
+            {
+                executionResult.SetInternalServerError(nameof(InvoiceController), functionName, ex);
+                return StatusCode(executionResult.GetStatusCode(), executionResult.GetServerResponse().Message);
+            }
+        }
+        #endregion
+
+
+        #region GetCustomerInvoicesDetails
+        [HttpGet]
+        [Route("GetCustomerInvoicesDetails/{CustomerId}/{InvoiceNumber}")]
+        public IActionResult GetCustomerInvoicesDetails(string CustomerId, int InvoiceNumber)
+        {
+            var executionResult = new ExecutionResult();
+            string functionName = nameof(GetInvoiceById);
+
+            try
+            {
+                using (var db = new AppDbContext(_config))
+                {
+                    var invoice = db.Invoices
+                                     .Include(c => c.CustomerDetails)
+                                     .Where(i => i.CustomerID == CustomerId && i.InvoiceNumber == InvoiceNumber).FirstOrDefault();
                     if (invoice == null)
                     {
                         return NotFound("No Invoice Avilable");

@@ -1,3 +1,4 @@
+import { CompanyPayload } from "./CompanyPayload";
 import { Customer } from "./Customer";
 
 export interface Invoice {
@@ -15,5 +16,7 @@ export interface Invoice {
     dueDate: string | null; // ISO Date string
     status: string;
     customerDetails: Customer;
+    companyDetails?: CompanyPayload;
+
   }
   

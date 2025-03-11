@@ -23,6 +23,7 @@ import { InvoiceComponent } from './home/billing/invoice/invoice.component';
 import { TrucksComponent } from './home/trucks/trucks.component';
 import { CustomerRegistrationComponent } from './home/account/custome-registration/custome-registration.component';
 import { CustomerRequestComponent } from './home/customer/request/customer-request.component';
+import { CustomerInvoiceComponent } from './home/customer/billing/invoice/invoice.component';
 // import { LoginComponent } from './account/login/login.component';
 // import { RegistrationComponent } from './account/registration/registration.component';
   
@@ -33,7 +34,6 @@ export const routes: Routes = [
   { path: 'home/landing', component: LandingComponent, canActivate: [AuthService] },
    { path: 'home/dashboard',component: DashboardComponent, canActivate: [AuthService], data: { breadcrumb: 'Dashboard' } },
   { path: 'home/request', component: RequestComponent, canActivate: [AuthService], data: { breadcrumb: 'Requests' } },
-  { path: 'home/customer/requests', component: CustomerRequestComponent, canActivate: [AuthService], data: { breadcrumb: 'Requests' } },
 
   { path: 'home/trucks', component: TrucksComponent, canActivate: [AuthService], data: { breadcrumb: 'Trucks' } },
   { path: 'home/drivers', component: DriversComponent, canActivate: [AuthService], data: { breadcrumb: 'Drivers' } },
@@ -42,11 +42,17 @@ export const routes: Routes = [
   { path: 'home/billing/payments', component: PaymentsComponent, canActivate: [AuthService], data: { breadcrumb: 'Payments' } },
 
 
+
+
+
   { path: 'account/login', component: LoginComponent },
   { path: 'account/registration', component: RegistrationComponent },
   { path: 'account/registration', component: RegistrationComponent },
 
-  { path: 'account/customer-registration', component: CustomerRegistrationComponent }
+  { path: 'account/customer-registration', component: CustomerRegistrationComponent },
+  { path: 'home/customer/billing/invoices', component: CustomerInvoiceComponent, canActivate: [AuthService], data: { breadcrumb: 'Invoices' } },
+  { path: 'home/customer/requests', component: CustomerRequestComponent, canActivate: [AuthService], data: { breadcrumb: 'Requests' } },
+
 
 ];
 

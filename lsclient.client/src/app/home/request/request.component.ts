@@ -117,10 +117,11 @@ drivers: any;
         
         // Show success message
         const successMessage = response.message || 'Job request updated successfully';
+        this.ngOnInit();
+        this.requestDetailsVisible= false;
         this.functions.displaySuccess(successMessage);
-  
         // Refresh job list
-        this.jobDialogVisible = false;
+        // this.jobDialogVisible = false;
       },
       (error: any) => {
         this.loadingService.hide();

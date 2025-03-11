@@ -134,6 +134,37 @@ namespace lsclient.Server.Controllers.Billing
             }
         }
         #endregion
+        #region GetCustomerPayments
+        [HttpGet]
+        [Route("GetCustomerPayments/{CustomerId}")]
+        public IActionResult GetCustomerPayments(string CustomerId)
+        {
+            var executionResult = new ExecutionResult();
+            string functionName = nameof(GetCustomerPayments);
+
+            try
+            {
+                var payment = _context.Payments
+                    .Include(p => p.Invoice)
+                    .Include(C => C.Invoice.CustomerDetails)
+                    .Include(C => C.Invoice.CompanyDetails)
+                    .Where(p => p.Invoice.CustomerID == CustomerId).ToList();
+
+                if (payment == null)
+                {
+                    return NotFound("Sorry ! You Do Not have Any Payment Record");
+                }
+
+                executionResult.SetData(payment);
+                return Ok(executionResult.GetServerResponse());
+            }
+            catch (Exception ex)
+            {
+                executionResult.SetInternalServerError(nameof(PaymentController), functionName, ex);
+                return StatusCode(executionResult.GetStatusCode(), executionResult.GetServerResponse().Message);
+            }
+        }
+        #endregion
         #region AddPayment
         [HttpPost]
         [Route("AddPayment")]

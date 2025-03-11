@@ -29,10 +29,13 @@ import html2canvas from 'html2canvas'; // Optional, for better rendering
 
 
 export class CustomerRequestComponent implements OnInit {
+  searchQuery: string = "";
+ 
+  
 drivers: any;
   showTruckContent: boolean = false;
     contractDetails: Contract | null= null;
-  TruckDetails: any;
+  TruckDetails: Truck|null= null;
   DriverDetails: any;
   avilableDriverLists: DriverPayload[]=[];
 
@@ -65,14 +68,18 @@ drivers: any;
   truckCompanyDriverContact: any;
    requestType: any = [];
    jobDialogVisible: boolean = false;
+   isOnProcessRequest: boolean= false;
+   IsshowRequestDetaisl: boolean= false;
+   showRequestDetails: any;
   selectedJobRequest: JobRequest | null = null;
+   RequestOnProcess: JobRequest | null= null;
+
+   public baseUrl = AppConstants.API_SERVER_URL;
  
-  onInputChange() {
-    this.isFormChanged = true;
-  }
+ 
   onTruckTypeChange() {
     const selectedTruckType = this.truckTypes.find(truck => truck.truckTypeID === this.selectedTruckTypeID);
-   
+   this.selectedTrucTypeImage  = selectedTruckType!.sampleImageUrl;
     if (selectedTruckType) {
      this.selectedTruckDescription = selectedTruckType.description;
    } else {
@@ -81,7 +88,23 @@ drivers: any;
  
     // this.showTruckContent=true;
  }
-
+ responsiveOptions = [
+  {
+    breakpoint: '1024px',
+    numVisible: 3,
+    numScroll: 3
+  },
+  {
+    breakpoint: '768px',
+    numVisible: 2,
+    numScroll: 2
+  },
+  {
+    breakpoint: '560px',
+    numVisible: 1,
+    numScroll: 1
+  }
+];
   saveJob(job: RequestWithPrice) {
     this.loadingService.show();
     this.newJobRequest = { ...job };
@@ -112,12 +135,13 @@ drivers: any;
 
           this.functions.displayInsertSuccess('request_created');
         }, (error: any): void => {
+          this.loadingService.hide();
           const errorMessage = error.error || error.message || 'An unknown error occurred';
           this.functions.displayError(errorMessage);
         });
       }
     }
-    this.loadingService.hide();
+    this.hideDialog();
   }
   updateRequest() {
     this.loadingService.show();
@@ -151,7 +175,7 @@ drivers: any;
     this.ngOnInit();
  
   }
-showRequestDetails: any;
+
 
  
  
@@ -180,13 +204,14 @@ showRequestDetails: any;
  
  
 
-  showDialog() {
-    this.displayDialog = true;
+  addNewReq() {
+    this.showNewReqDialog = true;
   }
 
   // Close the dialog
   hideDialog() {
-    this.displayDialog = false;
+    // this.ngOnInit();
+    this.showNewReqDialog = false;
   }
 
   // Toggle maximize state
@@ -209,13 +234,14 @@ first: number|null|undefined;
   targetColumns: TableColumn[] = []; // Selected columns
   jobRequests: JobRequest[] = [];
     columnDialogVisible: boolean= false;
-  displayDialog: boolean= false;
+  showNewReqDialog: boolean= false;
   maximized: boolean= false;
   requestForm: FormGroup;
 
   truckTypes: TruckType[] = [];
   selectedTruckTypeID: any;
   selectedTruckDescription: any;
+ selectedTrucTypeImage: string='';
    requestDetailsVisible: boolean =false;
    inspectRequestVisible: boolean= false;
    ActiveCustomerName: string | undefined;
@@ -421,6 +447,18 @@ first: number|null|undefined;
     
   }
 
+    showRequestOnProcess(req: JobRequest){
+      this.RequestOnProcess=req;
+
+    }
+    showRequestDetaisl(req: JobRequest){
+
+    this.RequestOnProcess=req; 
+       this.IsshowRequestDetaisl = true;
+
+
+    }
+
   editRequest(event: JobRequest) {
     this.loadingService.show();
     this.resetForm();
@@ -474,7 +512,7 @@ first: number|null|undefined;
       this.showDriverContent = false;
       this.showTruckContent = false;
     }
-    if ((ActiveReq.companyID == "")|| (ActiveReq.status == "READY FOR INVOICE") || (ActiveReq.status == "TRUCK DRIVER ASSIGNMENT") || (ActiveReq.status == "INVOICE PARTIAL READY TO SERVE") || (ActiveReq.status == "INVOICE PAID READY TO SERVE") || (ActiveReq.status == "READY TO SERVE") ||
+    if ((ActiveReq.status == "READY FOR INVOICE") || (ActiveReq.status == "TRUCK DRIVER ASSIGNMENT") || (ActiveReq.status == "INVOICE PARTIAL READY TO SERVE") || (ActiveReq.status == "INVOICE PAID READY TO SERVE") || (ActiveReq.status == "READY TO SERVE") ||
       (ActiveReq.status == "CANCELLED") || (ActiveReq.status.includes("PENDING")) ||
       (ActiveReq.status.includes("DRAFT")) || (ActiveReq.status.includes("INCOMPLETE ADVANCE PAYMENT")) || (ActiveReq.status.includes("ONGOING INVOICE GENERATION"))) {
       this.loadPriceDetails(ActiveReq.priceAgreementID);
@@ -538,8 +576,8 @@ first: number|null|undefined;
       { field: 'cargoDescription', header: 'Cargo Description' },
       { field: 'invoiceNumber', header: 'Invoice Number'},
       { field: 'priceAgreement.agreedPrice', header: 'Accepted Price' },
-      { field: 'priceAgreement.companyPrice', header: 'Company Price' },
-      { field: 'priceAgreement.customerPrice', header: 'Customer Price'},
+      { field: 'priceAgreement.companyPrice', header: 'Last Company Reply Price' },
+      { field: 'priceAgreement.customerPrice', header: 'Your  Price'},
       { field: 'status', header: 'Status' },
     ];
   }
@@ -681,4 +719,41 @@ first: number|null|undefined;
   }
 
  // #endregion
+
+
+ searchJobs() {
+  if (!this.searchTerm.trim()) {
+    // If the search is cleared, reset to all job requests
+    this.filteredJobs = [...this.jobRequests];
+  } else {
+    this.filteredJobs = this.jobRequests.filter(job =>
+      job.pickupLocation.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+      job.deliveryLocation.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+      job.status.toLowerCase().includes(this.searchTerm.toLowerCase())
+    );
+  }
+}
+
+onInputChange() {
+  this.isFormChanged = true;
+  if (!this.searchTerm.trim()) {
+    this.filteredJobs = [...this.jobRequests];
+  }
+}
+filterRequests() {
+  if (this.searchTerm) {
+    this.filteredJobs = this.jobRequests.filter(job =>
+      Object.values(job).some(value =>
+        value !== null &&
+        value !== undefined &&
+        value.toString().toLowerCase().includes(this.searchTerm.toLowerCase())
+      )
+    );
+  } else {
+    // Reload all jobs when clearing the search
+    this.loadJobs(this.customerID);
+  }
+}
+
+
 }

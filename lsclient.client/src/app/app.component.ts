@@ -64,7 +64,7 @@ export class AppComponent implements OnInit {
         this.menuItems = [
           { label: 'Dashboard', routerLink: '/home/dashboard', icon: 'pi pi-home' },
           { label: 'Requests', routerLink: '/home/customer/requests', icon: 'pi pi-briefcase' },
-          { label: 'Invoices', routerLink: '/home/billing/invoices', icon: 'pi pi-file' }
+          { label: 'Invoices', routerLink: '/home/customer/billing/invoices', icon: 'pi pi-file' }
         ];
       } else if (userRole === 'COMPANY') {
         // Menu for COMPANY role

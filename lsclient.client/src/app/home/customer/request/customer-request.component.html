@@ -1,12 +1,120 @@
 
-<div class="card">
-
+<div class="card p-4 shadow-lg surface-card rounded-lg">
   
-  <div class="flex justify-content-end gap-4 mb-3">
-    <p-button label="{{'new_request' | translate}}" icon="pi pi-plus" [rounded]="true" severity="help" (click)="showDialog()"/>
-    <p-button label="{{'manage_columns'| translate}}" [rounded]="true" icon="pi pi-cog" (click)="columnDialogVisible = true" styleClass="m-0" severity="info" />
-    <p-button label="{{'export_to_excel'| translate}}" [rounded]="true" icon="pi pi-download" badgeSeverity="warn" styleClass="m-0" />
+<!-- Top Action Buttons -->
+<div class="flex flex-wrap justify-content-between align-items-center mb-6">
+  <h2 class="text-2xl font-semibold text-primary">Job Requests</h2>
+  <div class="flex gap-3">
+    <p-button label="{{'new_request' | translate}}" icon="pi pi-plus" [rounded]="true" severity="help" (click)="addNewReq()" />
+    <p-button label="{{'manage_columns'| translate}}" [rounded]="true" icon="pi pi-cog" (click)="columnDialogVisible = true" severity="info" />
+    <p-button label="{{'export_to_excel'| translate}}" [rounded]="true" icon="pi pi-download" severity="warn" />
   </div>
+</div>
+
+<!-- Search Bar -->
+<div class="p-inputgroup mb-6">
+  <span class="p-input-icon-left w-full">
+    <i class="pi pi-search"></i>
+    <input type="text" pInputText placeholder="Search requests..." class="w-full p-3 rounded-lg border-2 border-gray-200 focus:border-primary" [(ngModel)]="searchTerm" (input)="filterRequests()">
+  </span>
+</div>
+
+<!-- Request Carousel -->
+<div class="request-carousel">
+  <p-carousel *ngIf="filteredJobs?.length" [value]="filteredJobs" [numVisible]="3" [numScroll]="3" [responsiveOptions]="responsiveOptions">
+    <ng-template let-request pTemplate="item">
+      <div class="carousel-item p-2">
+        <p-card class="request-card p-4 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
+          <!-- Header -->
+          <ng-template pTemplate="header">
+            <div class="flex justify-between align-items-center mb-4">
+              <h3 class="text-lg font-semibold text-primary">{{ request.jobRequestID }}</h3>
+              <span class="badge status-{{ request.status.toLowerCase() }} px-3 py-1 rounded-full text-sm">{{ request.status }}</span>
+            </div>
+          </ng-template>
+
+          <!-- Content -->
+          <ng-template pTemplate="content">
+            <div class="text-lg space-y-4 flex-grow">
+              <p class="flex items-center gap-2">
+                <i class="pi pi-map-marker text-primary"></i>
+                <strong>Pickup:</strong> {{ request.pickupLocation }}
+              </p>
+              <p class="flex items-center gap-2">
+                <i class="pi pi-map-marker text-success"></i>
+                <strong>Delivery:</strong> {{ request.deliveryLocation }}
+              </p>
+              <p class="flex items-center gap-2">
+                <i class="pi pi-box text-warning"></i>
+                <strong>Cargo:</strong> {{ request.cargoDescription }}
+              </p>
+            </div>
+
+            <!-- Reserved Space for Truck Image -->
+            <div class="mt-4 bg-gray-100 rounded-lg flex items-center justify-center" style="height: 200px;">
+              <ng-container *ngIf="request.truckImage; else noImage">
+                <img [src]="request.truckImage" alt="Requested Truck" class="w-full h-full object-cover rounded-lg">
+              </ng-container>
+              <ng-template #noImage>
+                <span class="text-gray-500">No Image Available</span>
+              </ng-template>
+            </div>
+          </ng-template>
+
+          <!-- Footer -->
+          <ng-template pTemplate="footer">
+            <p-button label="View Details" icon="pi pi-info-circle" class="p-button-outlined p-button-primary w-full" (click)="showRequestDetaisl(request)" />
+          </ng-template>
+        </p-card>
+      </div>
+    </ng-template>
+  </p-carousel>
+</div>
+
+<!-- No Results Message -->
+<p-message *ngIf="filteredJobs?.length === 0" severity="warn" text="No matching requests found." class="text-center mt-6"></p-message>
+
+    <!-- Dialog for detailed view -->
+    <p-dialog [(visible)]="isOnProcessRequest" [header]="'Request Details'" [modal]="true" [maximizable]="true" [responsive]="true" [style]="{ width: '100vw', height: '100vh' }">
+      <p-tabView>
+        <!-- General Details Tab -->
+        <p-tabPanel header="General Details">
+          <div *ngIf="activeRequest">
+            <p><strong>Request ID:</strong> {{ activeRequest.jobRequestID }}</p>
+            <p><strong>Pickup Location:</strong> {{ activeRequest.pickupLocation }}</p>
+            <p><strong>Delivery Location:</strong> {{ activeRequest.deliveryLocation }}</p>
+            <p><strong>Cargo Description:</strong> {{ activeRequest.cargoDescription }}</p>
+            <p><strong>Status:</strong> {{ activeRequest.status }}</p>
+          </div>
+        </p-tabPanel>
+  
+        <!-- Price Negotiation Replies Tab -->
+        <p-tabPanel header="Price Negotiation Replies">
+          <p-table [value]="RequestOnProcess?.negotiations|| []" [tableStyle]="{ 'min-width': '50rem' }">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Company ID</th>
+                <th>Company Price</th>
+                <th>Customer Price</th>
+                <th>Agreed Price</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-negotiation>
+              <tr>
+                <td>{{ negotiation.companyID }}</td>
+                <td>{{ negotiation.companyPrice }}</td>
+                <td>{{ negotiation.customerPrice }}</td>
+                <td>{{ negotiation.agreedPrice }}</td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </p-tabPanel>
+      </p-tabView>
+    </p-dialog>
+  </div>
+  
+  <p-dialog [(visible)]="IsshowRequestDetaisl" [header]="'Request Details'" [modal]="true" [responsive]="true" [style]="{ width: '100vw',height: '100vh' }">
+ 
   <p-table *ngIf="filteredJobs?.length"
            [value]="filteredJobs"
            dataKey="jobRequestID"
@@ -68,8 +176,7 @@
       </tr>
     </ng-template>
   </p-table>
-</div>
-
+</p-dialog>
 <!-- Caption with Expand/Collapse All buttons -->
 <!-- Column Management Dialog -->
 <p-dialog [(visible)]="columnDialogVisible" [header]="'Manage Columns'" [modal]="true" [responsive]="true" [style]="globalColumnControlService.getColumnDialogConfig()">
@@ -95,7 +202,7 @@
 <!-- NEW TRANSPORT REQUEST -->
 
 
-<p-dialog [(visible)]="displayDialog"
+<p-dialog [(visible)]="showNewReqDialog"
           (onHide)="hideDialog()"
           [maximizable]="true"
           header="Create New Request"
@@ -135,10 +242,10 @@
             </div>
 
             <!-- Truck Type -->
-            <div class="field mb-0">
-              <label for="truckType">{{ 'Truck Type Select' | translate }}</label>
-            </div>
-            <div class="field mb-3">
+            <div class="field   w-full">
+              <label for="truckType" class="block">{{ 'Truck Type Select' | translate }}</label>
+              </div>
+              <div class="w-full flex flex-col items-center">
               <p-select id="truckType"
                         [options]="truckTypes"
                         optionLabel="typeName"
@@ -151,12 +258,15 @@
                   <div title="{{ truck.description }}">{{ truck.typeName }}</div>
                 </ng-template>
               </p-select>
-              <div class="field mb-3">
-
-              <small class="text-secondary">{{ selectedTruckDescription }}</small>
-              </div>
             </div>
+            
+            <div class="w-full flex flex-col items-center">
+              <img [src]="baseUrl + selectedTrucTypeImage" class="w-full max-w-sm" />
+            </div>
+            <div class="w-full flex flex-col items-center">
+              <small class="w-full text-secondary text-center">{{ selectedTruckDescription }}</small>
 
+              </div>
            
           </div>
         </p-card>
@@ -350,58 +460,7 @@
               </p-card>
             </div>
 
-            <!-- Resource Assignment Card -->
-            <div class="col-12 md:col-6" *ngIf="showTruckContent || showDriverContent">
-              <p-card header="{{ 'resource_assignment' | translate }}">
-                <div class="p-fluid">
-                  <div class="grid">
-                    <div class="col-12 md:col-12">
-
-                      <!-- Truck Selection -->
-                      <div class="field" *ngIf="showTruckContent">
-                        <label class="font-medium">{{ 'truck' | translate }}</label>
-                        <ng-container *ngIf="!activeRequest.truckID; else truckAssigned">
-                          <p-select [options]="avilableTruckLists"
-                                    optionValue="truckID"
-                                    [(ngModel)]="activeRequest.truckID"
-                                    placeholder="{{ 'select_truck' | translate }}"
-                                    styleClass="dropdown-width">
-                            <ng-template let-truck pTemplate="selectedItem">
-                              {{ truck.truckNumber }} - {{ truck.model }}
-                            </ng-template>
-                            <ng-template let-truck pTemplate="item">
-                              {{ truck.truckNumber }} - {{ truck.model }}
-                            </ng-template>
-                          </p-select>
-                        </ng-container>
-                        <ng-template #truckAssigned>
-                          <span>{{ 'assigned_truck' | translate }}: {{ activeRequest.truckID }}</span>
-                        </ng-template>
-                      </div>
-
-                      <!-- Driver Selection -->
-                      <div class="field" *ngIf="showDriverContent">
-                        <label class="font-medium">{{ 'driver' | translate }}</label>
-                        <ng-container *ngIf="!activeRequest.driverID; else driverAssigned">
-                          <p-select [options]="avilableDriverLists"
-                                    optionLabel="fullName"
-                                    optionValue="driverID"
-                                    [(ngModel)]="activeRequest.driverID"
-                                    (ngModelChange)="onInputChange()"
-                                    placeholder="{{ 'select_driver' | translate }}"
-                                    styleClass="dropdown-width">
-                          </p-select>
-                        </ng-container>
-                        <ng-template #driverAssigned>
-                          <span>{{ 'assigned_driver' | translate }}: {{ activeRequest.driverID }}</span>
-                        </ng-template>
-                      </div>
-
-                    </div>
-                  </div>
-                </div>
-              </p-card>
-            </div>
+            
 
             <!-- Price Details Card -->
             <div class="col-12 md:col-6">
@@ -689,9 +748,9 @@
                         <label for="availableForBooking" class="font-medium">{{ 'available_for_booking' | translate }}</label>
                         <span>{{ TruckDetails.isTruckAvilableForBooking ? ('yes' | translate) : ('no' | translate) }}</span>
                       </div>
-                      <div class="field" *ngIf="TruckDetails.truckImage">
+                      <div class="field" *ngIf="TruckDetails.truckType.sampleImageUrl">
                         <label for="truckImage" class="font-medium">{{ 'truck_image' | translate }}</label>
-                        <img [src]="TruckDetails.truckImage" alt="Truck Image" class="details-image" />
+                        <img [src]=" baseUrl + TruckDetails.truckType.sampleImageUrl" alt="Truck Image" class="details-image" />
                       </div>
                     </div>
                   </div>

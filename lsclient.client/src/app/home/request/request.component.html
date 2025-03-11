@@ -433,8 +433,8 @@
                         <input pInputText (ngModelChange)="onInputChange()" type="number" min="1000" [(ngModel)]="activeRequest.requestedPrice" />
                       </div>
                       <div class="field" *ngIf="showPriceContent">
-                        <label class="font-medium">{{ 'customer_price' | translate }}</label>
-                        <input pInputText (ngModelChange)="onInputChange()" type="number" [(ngModel)]="activeRequest.customerPrice" />
+                        <label class="font-medium">{{ 'final_agreed_price' | translate }}</label>
+                        <input pInputText (ngModelChange)="onInputChange()" type="number" [(ngModel)]="activeRequest.acceptedPrice" />
                       </div>
                       <div class="field" *ngIf="showPriceContent">
                         <label class="font-medium">{{ 'company_advance' | translate }}</label>

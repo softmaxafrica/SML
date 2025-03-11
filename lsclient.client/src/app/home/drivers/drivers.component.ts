@@ -237,8 +237,15 @@ imageUrl: '',
           this.functions.displayUpdateSuccess();
             
         },
+
+
+        
         error: (err) => {
-          this.functions.displayError('Failed to update truck status: ' + err.message);
+          const errorMessage = err.error?.message || (typeof err.error === 'string' ? err.error : null) || err.message || // General HTTP error message
+          'An unknown error occurred';
+        this.functions.displayInfo(errorMessage);
+
+          this.functions.displayError('Failed to update Driver Details: ' + errorMessage);
         }
       });
        this.ngOnInit();
@@ -368,6 +375,7 @@ ResendDriverRegistration() {
 
     this.dataService.updateDriver(driverToReRegister).subscribe({
       next: (response: any) => {
+        this.loadingService.show();
         this.functions.displaySuccess(response.message);
           
       },
@@ -558,6 +566,13 @@ onSubmit(): void {
       this.functions.displaySuccess(successMessage);
     },
     (error: any) => {
+
+         const errorMessage =
+        error.error?.message ||
+        (typeof error.error === 'string' ? error.error : null) ||
+        error.message || // General HTTP error message
+        'An unknown error occurred';
+
       // Display an error message if the API call fails
       this.functions.displayError('Error approving/rejecting driver:\n' + error.error);
     }

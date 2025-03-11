@@ -25,7 +25,9 @@
       "dotnetRunMessages": true,
       "launchBrowser": true,
       "launchUrl": "swagger",
-      "applicationUrl": "https://localhost:7030;http://localhost:5173",
+      //"applicationUrl": "https://localhost:7030;http://localhost:5173",
+      "applicationUrl": "https://softmaxafrica-001-site2.otempurl.com/",
+
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.SpaProxy"

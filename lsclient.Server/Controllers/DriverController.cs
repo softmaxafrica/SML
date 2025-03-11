@@ -266,8 +266,15 @@ namespace lsclient.Server.Controllers
                 {
                     return NotFound("Driver not found");
                 }
+                
+                var ActiveReq = _context.JobRequests.Where(r => r.DriverID == updatedDriver.DriverID && r.Status != "COMPLETED").FirstOrDefault();
+                if(ActiveReq !=null)
+                {
+                    return BadRequest("Driver Has To Complete Ongoing Task First");
+                }
 
-                 if (!string.IsNullOrWhiteSpace(updatedDriver.FullName))
+
+                if (!string.IsNullOrWhiteSpace(updatedDriver.FullName))
                 {
                     driver.FullName = updatedDriver.FullName;
                 }

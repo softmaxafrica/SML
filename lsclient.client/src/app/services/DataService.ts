@@ -23,7 +23,29 @@ import { Payment } from '../models/payments';
   providedIn: 'root'
 })
 export class DataService {
-     
+  
+
+
+  getCustomerPayments(Customer: string): Observable<ApiResponse<Payment[]>> {
+    return this.http.get<ApiResponse<Payment[]>>(
+      `${this.baseUrl}Payment/GetCustomerPayments/${Customer}`
+    );
+  }
+
+  getCustomerInvoices(Customer: string): Observable<ApiResponse<Invoice[]>> {
+    return this.http.get<ApiResponse<Invoice[]>>(
+      `${this.baseUrl}Invoice/GetCustomerInvoice/${Customer}`
+    );
+  }
+
+  getCustomerInvoiceDetails(Customer: string,InvoiceNumber: number): Observable<ApiResponse<Invoice>> {
+    return this.http.get<ApiResponse<Invoice>>(
+      `${this.baseUrl}Invoice/getCustomerInvoiceDetails/${Customer}/${InvoiceNumber}`
+    );
+  }
+
+
+
 
   getInvoicePayments(InvoiceNumber: number): Observable<ApiResponse<Payment[]>> {
     return this.http.get<ApiResponse<Payment[]>>(
@@ -66,16 +88,7 @@ export class DataService {
       `${this.baseUrl}Payment/GetCompanyPayments/${companyId}`
     );
   }
-  addPayment<T>(newPayment: Payment): Observable<T>{
-    return this.http.post<T>(`${this.baseUrl}Payment/AddPayment`,newPayment);
-     }
 
-  
-  
-  getContractById(contractID: string): Observable<ApiResponse<Contract>> {
-    return this.http.get<ApiResponse<Contract>>(
-      `${this.baseUrl}Contracts/GetContractById/${contractID}`);
-  }
   getCompanyInvoices(companyId: string): Observable<ApiResponse<Invoice[]>> {
     return this.http.get<ApiResponse<Invoice[]>>(
       `${this.baseUrl}Invoice/GetCompanyInvoice/${companyId}`
@@ -87,6 +100,17 @@ export class DataService {
       `${this.baseUrl}Invoice/getCompanyInvoiceDetails/${companyId}/${InvoiceNumber}`
     );
   }
+  addPayment<T>(newPayment: Payment): Observable<T>{
+    return this.http.post<T>(`${this.baseUrl}Payment/AddPayment`,newPayment);
+     }
+
+  
+  
+  getContractById(contractID: string): Observable<ApiResponse<Contract>> {
+    return this.http.get<ApiResponse<Contract>>(
+      `${this.baseUrl}Contracts/GetContractById/${contractID}`);
+  }
+  
 
   postCustomer<T>(endpoint: string, customerRegData: Customer): Observable<T>{
  return this.http.post<T>(`${this.baseUrl}Customer/${endpoint}`,customerRegData);

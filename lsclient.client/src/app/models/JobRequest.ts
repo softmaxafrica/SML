@@ -23,7 +23,7 @@ export interface JobRequest {
     driverID: string; // Added
     invoiceNumber:number;
     priceDetails: PriceAgreement;
-    // negotiations: RequestWithPrice[];
+    negotiations?: PriceAgreement[]; 
     truckDetails: TrucksPayload;
     customerDetails: Customer;
     invoices: Invoice[]; // Added

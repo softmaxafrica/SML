@@ -56,5 +56,9 @@ namespace lsclient.Server.Models
         
         public virtual Customer? CustomerDetails { get; set; }
 
+        [ForeignKey("CompanyID")]
+
+        public virtual Company? CompanyDetails { get; set; }
+
     }
 }

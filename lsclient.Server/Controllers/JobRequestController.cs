@@ -363,6 +363,9 @@ namespace lsclient.Server.Controllers
                             existingJobRequest.TruckID = updatedJobRequest.TruckID;
                             existingJobRequest.DriverID = updatedJobRequest.DriverID;
 
+                            var driverDt = db.Drivers.Where(d => d.DriverID == updatedJobRequest.DriverID).FirstOrDefault();
+                            driverDt.isAvilableForBooking = false;
+                            
                             if (existingInvoice != null)
                             {
                                 existingJobRequest.Status = "INVOICE "+existingInvoice.Status+" READY TO SERVE";
@@ -392,6 +395,7 @@ namespace lsclient.Server.Controllers
                                 updatedJobRequest.Status = "ON AGREEMENT";
                             }
 
+
                             //Check if customer first Deposit Not Supplied But company Already Agree on price then set first deposit to 30 Percent of AgreedPRICE
                             //if ((updatedJobRequest.AcceptedPrice > 0 || existingJobRequest.PriceAgreementID != null) && updatedJobRequest.CompanyAdvanceAmountRequred > 0 && (updatedJobRequest.CompanyAdvanceAmountRequred <= updatedJobRequest.FirstDepositAmount || existingJobRequest.FirstDepositAmount >= updatedJobRequest.CompanyAdvanceAmountRequred))
                             //{
@@ -405,10 +409,14 @@ namespace lsclient.Server.Controllers
 
                             //update The Request Status if all agreement done( Price and (Temporary Removed FirstDeposit Checking)  / after assigned price agreement id)
                             //if ((updatedJobRequest.AcceptedPrice > 0) && (updatedJobRequest.CompanyAdvanceAmountRequred > 0) || (existingJobRequest.CompanyAdvanceAmountRequred > 0))
-                            if ((updatedJobRequest.AcceptedPrice > 0) && (updatedJobRequest.CompanyAdvanceAmountRequred > 0 || existingJobRequest.CompanyAdvanceAmountRequred > 0))
+                            if (updatedJobRequest.AcceptedPrice > 0)
 
                             {
-                                if (existingJobRequest.InvoiceNumber == null)
+                                if (updatedJobRequest.CompanyAdvanceAmountRequred < 1  && existingJobRequest.CompanyAdvanceAmountRequred < 1)
+                                {
+                                    updatedJobRequest.CompanyAdvanceAmountRequred = updatedJobRequest.AcceptedPrice * 0.3;
+                                }
+                                    if (existingJobRequest.InvoiceNumber == null)
                                 {
                                     updatedJobRequest.Status = "READY FOR INVOICE";
                                 }
